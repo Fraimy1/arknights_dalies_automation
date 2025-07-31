@@ -1,47 +1,60 @@
-from utils import locate_and_click, get_window_geometry, transform_coordinates
-import time
+from utils import ArknightsWindow
+from time import sleep
+import pyautogui as pg
 
+ark_window = ArknightsWindow()
 def do_daily_recruits():
     """
     This scenario automates the daily recruitment process in Arknights.
     """
     print("Starting daily recruitment scenario...")
+    
+    coords = {
+            1: (486, 435),
+            2: (1433, 435),
+            3: (486, 851),
+            4: (1433, 851),
+        }
+    
+    def click_recruitment_tile(n: int):
+        """Clicks the nth recruitment tile (1–4)."""
+        screen_coords = ark_window.get_screen_coords(*coords[n])
+        pg.click(*screen_coords)
 
-    # Get Arknights window geometry
-    window_geometry = get_window_geometry("Arknights") # Replace "Arknights" with the actual window title if different
-    if not window_geometry:
-        print("Could not find Arknights window. Aborting.")
-        return
+    def confirm_recruitment(i):
+        pg.click(*ark_window.get_screen_coords(674, 449)) # set time to 9
+        pg.click(*ark_window.get_screen_coords(1463, 876)) # confirm recruitment
+        
+        for _ in range(10000): # waiting for the loading screen to finish
+            check_coords = ark_window.get_scaled_coords(coords[i][0]-105, coords[i][1]+25)    
+            if ark_window.check_color_at(*check_coords, (255, 255, 255), confidence=0.8):
+                print(i, coords[i], check_coords)
+                print("Recruitment confirmed.")
+                break
+            sleep(0.001)
 
-    # These coordinates are placeholders and need to be adjusted for your screen resolution
-    # and the position of the elements in the game.
-    # The coordinates should be relative to the top-left of the game if it were fullscreen.
-    recruit_now_button_coords_fs = (1600, 900) 
-    confirm_button_coords_fs = (1280, 720)
+    def do_recruitment():
+        """Perform a full recruitment cycle."""
+        for i in range(1, 5):
+            click_recruitment_tile(i)
+            confirm_recruitment(i)
 
-    # Transform coordinates to be relative to the window
-    recruit_now_button_coords = transform_coordinates(recruit_now_button_coords_fs[0], recruit_now_button_coords_fs[1], window_geometry)
-    confirm_button_coords = transform_coordinates(confirm_button_coords_fs[0], confirm_button_coords_fs[1], window_geometry)
+    def click_hiring_tile(i):
+        """Click the hiring tile to start the recruitment process."""
+        screen_coords = ark_window.get_screen_coords(coords[i][0], coords[i][1]-136)
+        pg.click(*screen_coords)
+        
+    def skip_button():
+        """Click the skip button to skip the hiring animation."""
+        screen_coords = ark_window.get_screen_coords(1833, 51)
+        pg.click(*screen_coords)
 
-    # Example using coordinates. In a real scenario, using image recognition would be more robust.
-    # click(recruit_now_button_coords[0], recruit_now_button_coords[1])
-    # time.sleep(2)
-    # click(confirm_button_coords[0], confirm_button_coords[1])
+    def do_hiring():
+        """Perform the hiring process."""
+        for i in range(1, 5):
+            click_hiring_tile(i)
+            confirm_recruitment(i)
 
-    # Example using image recognition
-    # You would need to have 'recruit_now_button.png' and 'confirm_button.png' in your project directory
-    if locate_and_click('recruit_now_button.png'):
-        print("Clicked on 'Recruit Now' button.")
-        time.sleep(2)
-        if locate_and_click('confirm_button.png'):
-            print("Clicked on 'Confirm' button.")
-        else:
-            print("Could not find 'Confirm' button.")
-    else:
-        print("Could not find 'Recruit Now' button.")
+    do_recruitment()
 
-    print("Daily recruitment scenario finished.")
-
-# You can add more scenarios here
-# def do_another_task():
-#     ...
+do_daily_recruits()

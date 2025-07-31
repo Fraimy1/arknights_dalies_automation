@@ -3,3 +3,6 @@ pyscreeze
 termcolor
 pyautogui
 opencv-python
+pygetwindow
+mss
+numpy
