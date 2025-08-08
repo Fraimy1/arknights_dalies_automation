@@ -3,13 +3,17 @@ from utils import ArknightsWindow, ark_window
 from time import sleep
 from logger import logger
 import pyautogui as pg
-
+# Physical: X=3323,Y=266; Scaled: X=3323,Y=266; Relative: X=763,Y=578; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
+# Physical: X=3579,Y=263; Scaled: X=3579,Y=263; Relative: X=1019,Y=575; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
+# Physical: X=3829,Y=264; Scaled: X=3829,Y=264; Relative: X=1269,Y=576; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
+# Physical: X=3327,Y=372; Scaled: X=3327,Y=372; Relative: X=767,Y=684; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
+# Physical: X=3575,Y=369; Scaled: X=3575,Y=369; Relative: X=1015,Y=681; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
 recruitment_status_coords = {
-    1: (750, 570),
-    2: (1000, 570),
-    3: (1250, 570),
-    4: (750, 680),
-    5: (1000, 680),
+    1: (763, 578),
+    2: (1019, 575),
+    3: (1269, 576),
+    4: (767, 684),
+    5: (1015, 681),
 }
 class DailyRecruits:
     """
@@ -164,10 +168,45 @@ class DailyRecruits:
                     self._confirm_recruitment(i)
             elif tile_status == 'recruitment_done':
                 self._click_hiring_tile(i)
-                self._confirm_recruitment(i)
+                self._skip_button()
+
+class MainMenu:
+    """
+    This class automates the main menu process in Arknights.
+    """
+
+    def __init__(self):
+        self.tile_coords = { 
+            'recruit': (1500, 760),
+            'headhunt': (1760, 760),
+            'store': (1300, 720),
+            'missions': (1200, 900),
+            'base': (1550, 950),
+            'terminal': (1450, 250),
+            'friends': (540, 850),
+        }
+
+        self.return_coords = {
+            'recruit': []
+        }
+    
+    def click_tile(self, tile_name):
+        """Click the tile with the given name."""
+        coords = self.tile_coords[tile_name]
+        logger.debug(f"Clicking tile {tile_name} at {coords}")
+        ark_window.click(*coords)
+
+    def is_main_menu_visible(self):
+        """Check if the main menu is visible."""
+        return ark_window.check_color_at(1355, 110, (255, 255, 255), confidence=1)
+
+    def open_main_menu(self):
+        """Open the main menu."""
+        ark_window.click_and_wait((400, 50), (1421, 405), (255, 255, 255), mode='appear', timeout=5)
+        ark_window.click(130, 118)
 
 if __name__ == "__main__":
-    daily_recruits = DailyRecruits(use_expedite=True)
+    daily_recruits = DailyRecruits(use_expedite=False)
     # daily_recruits.do_hiring()
     daily_recruits.do_daily_recruits()
     # logger.info("Daily recruitment scenario completed.")

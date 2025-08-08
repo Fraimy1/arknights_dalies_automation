@@ -1,6 +1,6 @@
 import sys
 from termcolor import colored
-from scenarios import do_daily_recruits
+from scenarios import DailyRecruits
 
 def main_menu():
     """
@@ -19,7 +19,7 @@ def main_menu():
         choice = input("Enter your choice: ")
 
         if choice == '1':
-            do_daily_recruits()
+            DailyRecruits().do_daily_recruits()
         elif choice == '0':
             print(colored("Exiting the application. Goodbye!", "green"))
             sys.exit()
