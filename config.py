@@ -50,10 +50,19 @@ class Observability:
 ELEMENT_COORDS = {
     # Examples prefilled based on current scenarios. Adjust if needed.
     "skip_button": (1833, 51),
-    "recruitment_panel_indicator": (1460, 860),
+    "recruitment_panel_indicator": (1225, 28),
     "refresh_button": (1450, 604),
     "confirm_recruitment_button": (1463, 876),
     "main_menu_indicator": (1355, 110),
+    "back_button": (130, 50),
+    # Main menu tiles (migrated from MainMenu.tile_coords)
+    "tile_recruit": (1500, 760),
+    "tile_headhunt": (1760, 760),
+    "tile_store": (1300, 720),
+    "tile_missions": (1200, 900),
+    "tile_base": (1550, 950),
+    "tile_terminal": (1450, 250),
+    "tile_friends": (540, 850),
 }
 
 

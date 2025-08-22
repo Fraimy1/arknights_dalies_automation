@@ -59,26 +59,31 @@ ELEMENTS: Dict[str, UIElement] = {
                       ELEMENT_COORDS.get("main_menu_indicator", (0, 0))[1],
                       (255, 255, 255))],
     ),
-        # Back button (fill coords you use for back)
     "back_button": UIElement(
         name="back_button",
-        pixel_points=[(0, 0, (49, 49, 49))],  # TODO: replace (0,0) with actual coords
-        click_coords=None  # optional; if you prefer clicking instead of esc
+        pixel_points=[(ELEMENT_COORDS.get("back_button", (0, 0))[0],
+                      ELEMENT_COORDS.get("back_button", (0, 0))[1],
+                      (49, 49, 49))],
+        click_coords=ELEMENT_COORDS.get("back_button"),
     ),
-
-    # Main menu confirmation group: use several bright white anchors
-    "main_menu_confirm": UIElement(
-        name="main_menu_confirm",
+    "main_menu_confirm_points": UIElement(
+        name="main_menu_confirm_points",
         pixel_points=[
-            (1355, 110, (255, 255, 255)),   # existing indicator in your code
-            (0, 0, (255, 255, 255)),        # TODO: replace with another reliable white anchor
-            (0, 0, (255, 255, 255)),        # TODO: and one more
+            (1355, 110, (255, 255, 255)), # Originium icon
+            (69, 78, (255, 255, 255)), # Settings icon
+            (160, 75, (255, 255, 255)), # Info icon
+            (290, 75, (255, 255, 255)), # Mail icon
         ]
     ),
 
-    # Optional named tiles to use with tap/safe_click (if you want)
-    "tile_recruit": UIElement(name="tile_recruit", click_coords=(1500, 760)),
-    "tile_base": UIElement(name="tile_base", click_coords=(1550, 950)),
+    # Optional named tiles to use with tap/safe_click (click-only; no pixel checks)
+    "tile_recruit": UIElement(name="tile_recruit", click_coords=ELEMENT_COORDS.get("tile_recruit")),
+    "tile_headhunt": UIElement(name="tile_headhunt", click_coords=ELEMENT_COORDS.get("tile_headhunt")),
+    "tile_store": UIElement(name="tile_store", click_coords=ELEMENT_COORDS.get("tile_store")),
+    "tile_missions": UIElement(name="tile_missions", click_coords=ELEMENT_COORDS.get("tile_missions")),
+    "tile_base": UIElement(name="tile_base", click_coords=ELEMENT_COORDS.get("tile_base")),
+    "tile_terminal": UIElement(name="tile_terminal", click_coords=ELEMENT_COORDS.get("tile_terminal")),
+    "tile_friends": UIElement(name="tile_friends", click_coords=ELEMENT_COORDS.get("tile_friends")),
 }
 
 

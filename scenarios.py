@@ -1,5 +1,7 @@
 from cv2 import exp
+from config import Settings
 from utils import ArknightsWindow, ark_window
+from elements import get_element
 from time import sleep
 from logger import logger
 import pyautogui as pg
@@ -169,42 +171,75 @@ class MainMenu:
     This class automates the main menu process in Arknights.
     """
 
-    def __init__(self):
-        self.tile_coords = { 
-            'recruit': (1500, 760),
-            'headhunt': (1760, 760),
-            'store': (1300, 720),
-            'missions': (1200, 900),
-            'base': (1550, 950),
-            'terminal': (1450, 250),
-            'friends': (540, 850),
-        }
+    # def __init__(self):
+    #     self.tile_coords = { 
+    #         'recruit': (1500, 760),
+    #         'headhunt': (1760, 760),
+    #         'store': (1300, 720),
+    #         'missions': (1200, 900),
+    #         'base': (1550, 950),
+    #         'terminal': (1450, 250),
+    #         'friends': (540, 850),
+    #     }
 
-        self.return_coords = {
-            'recruit': {'check_coords': (1350, 110), 'return_coords': (50,50)},
-            'base': {'check_coords': (1350, 110), 'return_coords': (50,50)},
-        }
+        # self.return_coords = {
+        #     'recruit': {'check_coords': (1350, 110), 'return_coords': (50,50)},
+        #     'base': {'check_coords': (1350, 110), 'return_coords': (50,50)},
+        # }
     
-    def click_tile(self, tile_name):
-        """Click the tile with the given name."""
-        click_coords = self.tile_coords[tile_name]
-        check_coords = self.return_coords[tile_name]['check_coords']
-        logger.debug(f"Clicking tile {tile_name} at {click_coords}")
-        ark_window.click_and_wait(click_coords, check_coords, (255, 255, 255), mode='disappear', timeout=15)
+    # def click_tile(self, tile_name):
+    #     """Click the tile with the given name."""
+    #     click_coords = self.tile_coords[tile_name]
+    #     check_coords = self.return_coords[tile_name]['check_coords']
+    #     logger.debug(f"Clicking tile {tile_name} at {click_coords}")
+    #     ark_window.click_and_wait(click_coords, check_coords, (255, 255, 255), mode='disappear', timeout=15)
 
+    # def open_main_menu(self, tile_name):
+    #     """Open the main menu."""
+    #     return_coords = self.return_coords[tile_name]['return_coords']
+    #     check_coords = self.return_coords[tile_name]['check_coords']
+    #     if return_coords != (50, 50):
+    #         ark_window.click_and_wait((400, 50), (0, 0), (27, 27, 27), mode='appear', timeout=5)
+    #         sleep(0.2)
+    #     ark_window.click_and_wait(return_coords, check_coords, (255, 255, 255), mode='appear', timeout=15)
+    
     def is_main_menu_visible(self):
-        """Check if the main menu is visible."""
-        return ark_window.check_color_at(1355, 110, (255, 255, 255), confidence=1)
+        # Use consolidated multi-point check
+        return ark_window.is_visible("main_menu_confirm_points")
 
-    def open_main_menu(self, tile_name):
-        """Open the main menu."""
-        return_coords = self.return_coords[tile_name]['return_coords']
-        check_coords = self.return_coords[tile_name]['check_coords']
-        if return_coords != (50, 50):
-            ark_window.click_and_wait((400, 50), (0, 0), (27, 27, 27), mode='appear', timeout=5)
-            sleep(0.2)
-        ark_window.click_and_wait(return_coords, check_coords, (255, 255, 255), mode='appear', timeout=15)
+    def return_to_main_menu(self, max_presses=6):
+        """
+        Press back until:
+        - back_button disappears, and
+        - main menu confirms appear.
+        """
+        for _ in range(max_presses):
+            if self.is_main_menu_visible():
+                return True
+            # Either press keyboard back/esc or tap the on-screen back button if you prefer
+            ark_window.click(*get_element('back_button').click_coords)
+            ark_window.wait_gone("back_button", timeout=0.1)
+            if ark_window.wait_visible("main_menu_confirm_points", timeout=0.25):
+                return True
+        # Final check
+        return ark_window.wait_visible("main_menu_confirm_points", timeout=5.0)
 
+    def navigate_to(self, tile_name: str, target_state: str, retries: int = 21):
+        """
+        Click a tile, confirm we arrived with target_state, retry after recovery if needed.
+        """
+        for attempt in range(retries + 1):
+            
+            ark_window.safe_click(get_element(tile_name).click_coords, expect_visible=None)
+
+            if ark_window.wait_state(target_state, timeout=Settings.timeouts.default_timeout):
+                return True
+
+            # Didn't arrive; recover and retry
+            self.return_to_main_menu()
+
+        return False
+        
 class Base:
     """
     This class automates the base process in Arknights.
@@ -243,9 +278,12 @@ if __name__ == "__main__":
     # base.close_notification()
     # main_menu.open_main_menu('base')
 
-    main_menu.click_tile('recruit')
-    daily_recruits.do_daily_recruits()
-    main_menu.open_main_menu('recruit')
+    # main_menu.click_tile('recruit')
+    # daily_recruits.do_daily_recruits()
+    for _ in range(4):
+        main_menu.navigate_to('tile_recruit', 'recruitment_panel')
+        main_menu.return_to_main_menu()
+    # print(main_menu.return_to_main_menu())
     # logger.info("Daily recruitment scenario completed.")
     # status = daily_recruits.check_tile(1)
     # print(f"Tile 1 status: {status}")

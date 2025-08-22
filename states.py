@@ -10,7 +10,7 @@ RECRUITMENT_PANEL = "recruitment_panel"
 
 def is_state(window, state_name: str) -> bool:
     if state_name == MAIN_MENU:
-        el = get_element("main_menu_indicator")
+        el = get_element("main_menu_confirm_points")
         return window.is_visible(el) if el else False
     if state_name == RECRUITMENT_PANEL:
         el = get_element("recruitment_panel_indicator")
