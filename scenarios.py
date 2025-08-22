@@ -135,9 +135,6 @@ class DailyRecruits:
             logger.info(f"Tile {i} status: {tile_status} in main loop")
             if tile_status == 'no_recruitment':
                 self._click_recruitment_tile(i)
-                while self._refresh_available() and not self.rare_option_available():
-                   logger.info(f"Refresh available for tile {i}")
-                   self._click_refresh_button()
 
                 if self.rare_option_available():
                     logger.info(f"Rare recruitment option available for tile {i}")
@@ -155,9 +152,6 @@ class DailyRecruits:
 
                 if self.finish_on_recruitment:
                     self._click_recruitment_tile(i)
-                    while self._refresh_available() and not self.rare_option_available():
-                        logger.info(f"Refresh available for tile {i}")
-                        self._click_refresh_button()
 
                     if self.rare_option_available():
                         logger.info(f"Rare recruitment option available for tile {i}")
@@ -187,28 +181,71 @@ class MainMenu:
         }
 
         self.return_coords = {
-            'recruit': []
+            'recruit': {'check_coords': (1350, 110), 'return_coords': (50,50)},
+            'base': {'check_coords': (1350, 110), 'return_coords': (50,50)},
         }
     
     def click_tile(self, tile_name):
         """Click the tile with the given name."""
-        coords = self.tile_coords[tile_name]
-        logger.debug(f"Clicking tile {tile_name} at {coords}")
-        ark_window.click(*coords)
+        click_coords = self.tile_coords[tile_name]
+        check_coords = self.return_coords[tile_name]['check_coords']
+        logger.debug(f"Clicking tile {tile_name} at {click_coords}")
+        ark_window.click_and_wait(click_coords, check_coords, (255, 255, 255), mode='disappear', timeout=15)
 
     def is_main_menu_visible(self):
         """Check if the main menu is visible."""
         return ark_window.check_color_at(1355, 110, (255, 255, 255), confidence=1)
 
-    def open_main_menu(self):
+    def open_main_menu(self, tile_name):
         """Open the main menu."""
-        ark_window.click_and_wait((400, 50), (1421, 405), (255, 255, 255), mode='appear', timeout=5)
-        ark_window.click(130, 118)
+        return_coords = self.return_coords[tile_name]['return_coords']
+        check_coords = self.return_coords[tile_name]['check_coords']
+        if return_coords != (50, 50):
+            ark_window.click_and_wait((400, 50), (0, 0), (27, 27, 27), mode='appear', timeout=5)
+            sleep(0.2)
+        ark_window.click_and_wait(return_coords, check_coords, (255, 255, 255), mode='appear', timeout=15)
+
+class Base:
+    """
+    This class automates the base process in Arknights.
+    """
+    #TODO: The notification can appear higher if there are no emergencies.
+    #TODO: Check if there are any emergencies and change the notification coords accordingly.
+    def __init__(self):
+        self.tile_coords = {'notification': (1802, 207)}
+
+    def open_notification(self):
+        """Open the notification."""
+        coords = self.tile_coords['notification']
+        ark_window.click_and_wait(coords, coords, (255, 255, 255), mode='disappear', timeout=5)
+
+    def close_notification(self):
+        """Close the notification."""
+        coords = self.tile_coords['notification']
+        ark_window.click_and_wait(coords, coords, (255, 255, 255), mode='appear', timeout=5)
+    
+    def click_notification_tiles(self):
+        """Click the notification tiles."""
+        click_coords = (270, 1000)
+
+        for i in range(4):
+            ark_window.click(*click_coords)
+            sleep(1)
 
 if __name__ == "__main__":
     daily_recruits = DailyRecruits(use_expedite=False)
-    # daily_recruits.do_hiring()
+    base = Base()
+    main_menu = MainMenu()
+    # main_menu.click_tile('base')
+    # sleep(5)
+    # base.open_notification()
+    # base.click_notification_tiles()
+    # base.close_notification()
+    # main_menu.open_main_menu('base')
+
+    main_menu.click_tile('recruit')
     daily_recruits.do_daily_recruits()
+    main_menu.open_main_menu('recruit')
     # logger.info("Daily recruitment scenario completed.")
     # status = daily_recruits.check_tile(1)
     # print(f"Tile 1 status: {status}")

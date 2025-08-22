@@ -6,3 +6,4 @@ opencv-python
 pygetwindow
 mss
 numpy
+keyboard
