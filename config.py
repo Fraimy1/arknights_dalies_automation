@@ -48,13 +48,17 @@ class Observability:
 # Named coordinates and regions used by ergonomic APIs and states.
 # Fill in or adjust as needed for your setup.
 ELEMENT_COORDS = {
-    # Examples prefilled based on current scenarios. Adjust if needed.
-    "skip_button": (1833, 51),
-    "recruitment_panel_indicator": (1225, 28),
+    # Buttons
     "refresh_button": (1450, 604),
     "confirm_recruitment_button": (1463, 876),
+    "skip_button": (1833, 51),
     "back_button": (130, 50),
-    "base_panel_indicator": (270, 168),
+    "notification_upper": (1802, 140),
+    "notification_lower": (1802, 207),
+    "notification_color_check": (1828, 115),
+    # Indicators
+    "recruitment_indicator": (1225, 28),
+    "base_indicator": (270, 168),
     # Main menu tiles (migrated from MainMenu.tile_coords)
     "tile_recruit": (1500, 760),
     "tile_headhunt": (1760, 760),
@@ -71,7 +75,11 @@ ELEMENT_COORDS = {
     "base_factory_1": (586, 452),
     "base_factory_2": (246, 564),
     "base_factory_3": (700, 564),
-    "base_factory_4": (361, 768), 
+    "base_factory_4": (361, 678), 
+    # Missions
+    "mission_collect_all_button": (1508, 210),
+    "weekly_mission_button": (1280, 30),
+
 }
 
 

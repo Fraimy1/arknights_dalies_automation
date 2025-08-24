@@ -56,8 +56,8 @@ ELEMENTS: Dict[str, UIElement] = {
         click_coords=ELEMENT_COORDS.get("back_button"),
     ),
     # Indicators
-    "main_menu_confirm_points": UIElement(
-        name="main_menu_confirm_points",
+    "main_menu_indicators": UIElement(
+        name="main_menu_indicators",
         pixel_points=[
             (1355, 110, (255, 255, 255)), # Originium icon
             (69, 78, (255, 255, 255)), # Settings icon
@@ -65,16 +65,16 @@ ELEMENTS: Dict[str, UIElement] = {
             (290, 75, (255, 255, 255)), # Mail icon
         ]
     ),
-    "recruitment_panel_indicator": UIElement(
-        name="recruitment_panel_indicator",
-        pixel_points=[(ELEMENT_COORDS.get("recruitment_panel_indicator", (0, 0))[0],
-                      ELEMENT_COORDS.get("recruitment_panel_indicator", (0, 0))[1],
+    "recruitment_indicator": UIElement(
+        name="recruitment_indicator",
+        pixel_points=[(ELEMENT_COORDS.get("recruitment_indicator", (0, 0))[0],
+                      ELEMENT_COORDS.get("recruitment_indicator", (0, 0))[1],
                       (255, 255, 255))],
     ),
-    "base_panel_indicator": UIElement(
-        name="base_panel_indicator",
-        pixel_points=[(ELEMENT_COORDS.get("base_panel_indicator", (0, 0))[0],
-                      ELEMENT_COORDS.get("base_panel_indicator", (0, 0))[1],
+    "base_indicator": UIElement(
+        name="base_indicator",
+        pixel_points=[(ELEMENT_COORDS.get("base_indicator", (0, 0))[0],
+                      ELEMENT_COORDS.get("base_indicator", (0, 0))[1],
                       (255, 255, 255))],
     ),
     # Optional named tiles to use with tap/safe_click (click-only; no pixel checks)

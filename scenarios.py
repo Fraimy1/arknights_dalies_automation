@@ -205,7 +205,7 @@ class MainMenu:
     
     def is_main_menu_visible(self):
         # Use consolidated multi-point check
-        return ark_window.is_visible("main_menu_confirm_points")
+        return ark_window.is_visible("main_menu_indicators")
 
     def return_to_main_menu(self, max_presses=6):
         """
@@ -219,10 +219,10 @@ class MainMenu:
             # Either press keyboard back/esc or tap the on-screen back button if you prefer
             ark_window.click(*get_element('back_button').click_coords)
             ark_window.wait_gone("back_button", timeout=0.1)
-            if ark_window.wait_visible("main_menu_confirm_points", timeout=0.25):
+            if ark_window.wait_visible("main_menu_indicators", timeout=0.25):
                 return True
         # Final check
-        return ark_window.wait_visible("main_menu_confirm_points", timeout=5.0)
+        return ark_window.wait_visible("main_menu_indicators", timeout=5.0)
 
     def navigate_to(self, tile_name: str, target_state: str, retries: int = 21):
         """
@@ -308,13 +308,18 @@ class Base:
         sleep(1)
         ark_window.click(*get_element('notification_upper').click_coords)
         sleep(2)
-        ark_window.click(*get_element('notification_lower').click_coords)
+        ark_window.click(*get_element('notification_upper').click_coords)
+        sleep(1)
         for i in range(1, 5):
             element_name = f"base_factory_{i}"
             coords = get_element(element_name).click_coords
             color = get_element(element_name).pixel_points[0][2]    
-            logger.debug(f"Clicking base factory tile {i} at {coords} with color {color}")
-            ark_window.click_and_wait(coords, coords, color, mode='disappear', timeout=5)
+            if ark_window.check_color_at(*coords, color, confidence=1):
+                ark_window.click_and_wait(coords, coords, color, mode='disappear', timeout=5)
+                logger.debug(f"Clicking base factory tile {i} at {coords} with color {color}")
+            else:
+                logger.debug(f"Base factory tile {i} is already clicked")
+                continue
             sleep(1)
 
 class TaskAggregator:
@@ -339,7 +344,7 @@ class TaskAggregator:
         # Execute base tasks
         sleep(2.5)
         self.base.click_base_factory_tiles()
-        
+        sleep(3)
         if self.base.open_notification():
             self.base.click_notification_tiles()
             self.base.close_notification()
@@ -391,10 +396,32 @@ class TaskAggregator:
         
         logger.info("All daily tasks completed")
 
+class Missions:
+    """
+    This class automates the missions process in Arknights.
+    """
+    
+    def __init__(self):
+        pass
+    
+    def collect_daily_rewards(self):
+        """Collect the daily rewards."""
+        
+
 if __name__ == "__main__":
     main_menu = MainMenu()
+    base = Base()
+    daily_recruits = DailyRecruits(use_expedite=False)
+    task_aggregator = TaskAggregator(use_expedite=False)
+    task_aggregator.run_all_dailies()
+    # TODO: Fix navigate to recruitment panel
+    # main_menu.navigate_to('tile_recruit', 'recruitment_indicator')
+    # daily_recruits.do_daily_recruits()
+    # daily_recruits.do_daily_recruits()
+    # main_menu.return_to_main_menu()
+    # base.click_base_factory_tiles()
     # print(main_menu.is_main_menu_visible())
     # aggregator = TaskAggregator(use_expedite=False)
     # aggregator.run_all_dailies()
-    base = Base()
-    base.click_base_factory_tiles()
+    # base = Base()
+    # base.click_base_factory_tiles()
