@@ -53,8 +53,8 @@ ELEMENT_COORDS = {
     "recruitment_panel_indicator": (1225, 28),
     "refresh_button": (1450, 604),
     "confirm_recruitment_button": (1463, 876),
-    "main_menu_indicator": (1355, 110),
     "back_button": (130, 50),
+    "base_panel_indicator": (270, 168),
     # Main menu tiles (migrated from MainMenu.tile_coords)
     "tile_recruit": (1500, 760),
     "tile_headhunt": (1760, 760),
@@ -63,6 +63,15 @@ ELEMENT_COORDS = {
     "tile_base": (1550, 950),
     "tile_terminal": (1450, 250),
     "tile_friends": (540, 850),
+    # Base notification positions
+    "notification_upper": (1802, 140),
+    "notification_lower": (1802, 207),
+    "notification_color_check": (1828, 115),
+    #Base factories notifications positions
+    "base_factory_1": (586, 452),
+    "base_factory_2": (246, 564),
+    "base_factory_3": (700, 564),
+    "base_factory_4": (361, 768), 
 }
 
 

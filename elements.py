@@ -33,12 +33,7 @@ ELEMENTS: Dict[str, UIElement] = {
                       (255, 255, 255))],
         click_coords=ELEMENT_COORDS.get("skip_button"),
     ),
-    "recruitment_panel_indicator": UIElement(
-        name="recruitment_panel_indicator",
-        pixel_points=[(ELEMENT_COORDS.get("recruitment_panel_indicator", (0, 0))[0],
-                      ELEMENT_COORDS.get("recruitment_panel_indicator", (0, 0))[1],
-                      (255, 255, 255))],
-    ),
+
     "refresh_button": UIElement(
         name="refresh_button",
         pixel_points=[(ELEMENT_COORDS.get("refresh_button", (0, 0))[0],
@@ -53,12 +48,6 @@ ELEMENTS: Dict[str, UIElement] = {
                       (0, 153, 220))],
         click_coords=ELEMENT_COORDS.get("confirm_recruitment_button"),
     ),
-    "main_menu_indicator": UIElement(
-        name="main_menu_indicator",
-        pixel_points=[(ELEMENT_COORDS.get("main_menu_indicator", (0, 0))[0],
-                      ELEMENT_COORDS.get("main_menu_indicator", (0, 0))[1],
-                      (255, 255, 255))],
-    ),
     "back_button": UIElement(
         name="back_button",
         pixel_points=[(ELEMENT_COORDS.get("back_button", (0, 0))[0],
@@ -66,6 +55,7 @@ ELEMENTS: Dict[str, UIElement] = {
                       (49, 49, 49))],
         click_coords=ELEMENT_COORDS.get("back_button"),
     ),
+    # Indicators
     "main_menu_confirm_points": UIElement(
         name="main_menu_confirm_points",
         pixel_points=[
@@ -75,7 +65,18 @@ ELEMENTS: Dict[str, UIElement] = {
             (290, 75, (255, 255, 255)), # Mail icon
         ]
     ),
-
+    "recruitment_panel_indicator": UIElement(
+        name="recruitment_panel_indicator",
+        pixel_points=[(ELEMENT_COORDS.get("recruitment_panel_indicator", (0, 0))[0],
+                      ELEMENT_COORDS.get("recruitment_panel_indicator", (0, 0))[1],
+                      (255, 255, 255))],
+    ),
+    "base_panel_indicator": UIElement(
+        name="base_panel_indicator",
+        pixel_points=[(ELEMENT_COORDS.get("base_panel_indicator", (0, 0))[0],
+                      ELEMENT_COORDS.get("base_panel_indicator", (0, 0))[1],
+                      (255, 255, 255))],
+    ),
     # Optional named tiles to use with tap/safe_click (click-only; no pixel checks)
     "tile_recruit": UIElement(name="tile_recruit", click_coords=ELEMENT_COORDS.get("tile_recruit")),
     "tile_headhunt": UIElement(name="tile_headhunt", click_coords=ELEMENT_COORDS.get("tile_headhunt")),
@@ -84,6 +85,31 @@ ELEMENTS: Dict[str, UIElement] = {
     "tile_base": UIElement(name="tile_base", click_coords=ELEMENT_COORDS.get("tile_base")),
     "tile_terminal": UIElement(name="tile_terminal", click_coords=ELEMENT_COORDS.get("tile_terminal")),
     "tile_friends": UIElement(name="tile_friends", click_coords=ELEMENT_COORDS.get("tile_friends")),
+    
+    # Base notification elements (click-only; position determined by color check)
+    "notification_upper": UIElement(name="notification_upper", click_coords=ELEMENT_COORDS.get("notification_upper")),
+    "notification_lower": UIElement(name="notification_lower", click_coords=ELEMENT_COORDS.get("notification_lower")),
+    "notification_color_check": UIElement(name="notification_color_check", click_coords=ELEMENT_COORDS.get("notification_color_check")),
+    "base_factory_1": UIElement(
+        name="base_factory_1", 
+        pixel_points=[(*ELEMENT_COORDS.get("base_factory_1"), (255, 216, 2))],
+        click_coords=ELEMENT_COORDS.get("base_factory_1"),
+    ),
+    "base_factory_2": UIElement(
+        name="base_factory_2", 
+        pixel_points=[(*ELEMENT_COORDS.get("base_factory_2"), (255, 216, 2))],
+        click_coords=ELEMENT_COORDS.get("base_factory_2"),
+    ),
+    "base_factory_3": UIElement(
+        name="base_factory_3", 
+        pixel_points=[(*ELEMENT_COORDS.get("base_factory_3"), (255, 216, 2))],
+        click_coords=ELEMENT_COORDS.get("base_factory_3"),
+    ),
+    "base_factory_4": UIElement(
+        name="base_factory_4", 
+        pixel_points=[(*ELEMENT_COORDS.get("base_factory_4"), (255, 216, 2))],
+        click_coords=ELEMENT_COORDS.get("base_factory_4"),
+    ),
 }
 
 

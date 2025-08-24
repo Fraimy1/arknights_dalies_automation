@@ -244,51 +244,157 @@ class Base:
     """
     This class automates the base process in Arknights.
     """
-    #TODO: The notification can appear higher if there are no emergencies.
-    #TODO: Check if there are any emergencies and change the notification coords accordingly.
-    def __init__(self):
-        self.tile_coords = {'notification': (1802, 207)}
+    
+    def _detect_notification_position(self):
+        """
+        Detect notification button position based on color check.
+        Returns: 'upper', 'lower', or None if no notification present.
+        """
+        from config import ELEMENT_COORDS
+        check_coords = ELEMENT_COORDS["notification_color_check"]
+        color = ark_window.get_pixel_color(*check_coords)
+        red, green, blue = color
+        
+        logger.debug(f"Notification color check at {check_coords}: RGB={color}")
+        
+        # Check for emergency (red button): red < 190 and blue > 200 -> notification is upper
+        if red < 190 and blue > 200:
+            logger.info("Emergency detected, notification is in upper position")
+            return 'upper'
+        # Check for normal notification: red > 190 and blue < 190 -> notification is lower
+        elif red > 190 and blue < 190:
+            logger.info("Normal state, notification is in lower position") 
+            return 'lower'
+        else:
+            logger.info("No notification button detected - dailies already completed")
+            return None
 
     def open_notification(self):
-        """Open the notification."""
-        coords = self.tile_coords['notification']
+        """Open the notification using smart position detection."""
+        position = self._detect_notification_position()
+        if position is None:
+            logger.info("No notification to open - base dailies already completed")
+            return False
+            
+        element_name = f"notification_{position}"
+        coords = get_element(element_name).click_coords
+        logger.debug(f"Opening notification at {position} position: {coords}")
         ark_window.click_and_wait(coords, coords, (255, 255, 255), mode='disappear', timeout=5)
+        return True
 
     def close_notification(self):
-        """Close the notification."""
-        coords = self.tile_coords['notification']
+        """Close the notification using smart position detection."""
+        position = self._detect_notification_position()
+        if position is None:
+            logger.info("No notification to close")
+            return False
+            
+        element_name = f"notification_{position}" 
+        coords = get_element(element_name).click_coords
+        logger.debug(f"Closing notification at {position} position: {coords}")
         ark_window.click_and_wait(coords, coords, (255, 255, 255), mode='appear', timeout=5)
+        return True
     
     def click_notification_tiles(self):
         """Click the notification tiles."""
         click_coords = (270, 1000)
 
-        for i in range(4):
+        for _ in range(8):
             ark_window.click(*click_coords)
             sleep(1)
 
-if __name__ == "__main__":
-    daily_recruits = DailyRecruits(use_expedite=False)
-    base = Base()
-    main_menu = MainMenu()
-    # main_menu.click_tile('base')
-    # sleep(5)
-    # base.open_notification()
-    # base.click_notification_tiles()
-    # base.close_notification()
-    # main_menu.open_main_menu('base')
+    def click_base_factory_tiles(self):
+        """Click the base factory tiles."""
+        sleep(1)
+        ark_window.click(*get_element('notification_upper').click_coords)
+        sleep(2)
+        ark_window.click(*get_element('notification_lower').click_coords)
+        for i in range(1, 5):
+            element_name = f"base_factory_{i}"
+            coords = get_element(element_name).click_coords
+            color = get_element(element_name).pixel_points[0][2]    
+            logger.debug(f"Clicking base factory tile {i} at {coords} with color {color}")
+            ark_window.click_and_wait(coords, coords, color, mode='disappear', timeout=5)
+            sleep(1)
 
-    # main_menu.click_tile('recruit')
-    # daily_recruits.do_daily_recruits()
-    for _ in range(4):
-        main_menu.navigate_to('tile_recruit', 'recruitment_panel')
-        main_menu.return_to_main_menu()
-    # print(main_menu.return_to_main_menu())
-    # logger.info("Daily recruitment scenario completed.")
-    # status = daily_recruits.check_tile(1)
-    # print(f"Tile 1 status: {status}")
-    # if status == 'recruitment_in_progress':
-    #     daily_recruits._do_expedite(1)
-    #     sleep(2)
-    #     daily_recruits._click_hiring_tile(1)
-    #     daily_recruits._skip_button()
+class TaskAggregator:
+    """
+    Aggregates and controls all daily automation tasks.
+    """
+    
+    def __init__(self, use_expedite=False, finish_on_recruitment=True):
+        self.daily_recruits = DailyRecruits(use_expedite=use_expedite, finish_on_recruitment=finish_on_recruitment)
+        self.base = Base()
+        self.main_menu = MainMenu()
+        logger.info("TaskAggregator initialized")
+    
+    def run_base_dailies(self):
+        """Execute base daily tasks."""
+        logger.info("Starting base dailies...")
+        # Navigate to base
+        if not self.main_menu.navigate_to('tile_base', 'base_panel'):
+            logger.error("Failed to navigate to base")
+            return False
+        
+        # Execute base tasks
+        sleep(2.5)
+        self.base.click_base_factory_tiles()
+        
+        if self.base.open_notification():
+            self.base.click_notification_tiles()
+            self.base.close_notification()
+            logger.info("Base dailies completed")
+        else:
+            logger.info("Base dailies already completed")
+        
+        # Return to main menu
+        self.main_menu.return_to_main_menu()
+        return True
+    
+    def run_recruitment_dailies(self):
+        """Execute recruitment daily tasks."""
+        logger.info("Starting recruitment dailies...")
+        # Navigate to recruitment
+        if not self.main_menu.navigate_to('tile_recruit', 'recruitment_panel'):
+            logger.error("Failed to navigate to recruitment")
+            return False
+        
+        # Execute recruitment tasks
+        self.daily_recruits.do_daily_recruits()
+        logger.info("Recruitment dailies completed")
+        
+        # Return to main menu
+        self.main_menu.return_to_main_menu()
+        return True
+    
+    def run_all_dailies(self):
+        """Execute all daily tasks in sequence."""
+        logger.info("Starting all daily tasks...")
+        
+        tasks = [
+            ("Recruitment", self.run_recruitment_dailies),
+            ("Base", self.run_base_dailies),
+        ]
+        
+        for task_name, task_func in tasks:
+            try:
+                logger.info(f"Executing {task_name} tasks...")
+                success = task_func()
+                if success:
+                    logger.info(f"{task_name} tasks completed successfully")
+                else:
+                    logger.warning(f"{task_name} tasks failed")
+            except Exception as e:
+                logger.error(f"Error during {task_name} tasks: {e}")
+                # Try to recover to main menu
+                self.main_menu.return_to_main_menu()
+        
+        logger.info("All daily tasks completed")
+
+if __name__ == "__main__":
+    main_menu = MainMenu()
+    # print(main_menu.is_main_menu_visible())
+    # aggregator = TaskAggregator(use_expedite=False)
+    # aggregator.run_all_dailies()
+    base = Base()
+    base.click_base_factory_tiles()
