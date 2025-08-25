@@ -287,7 +287,7 @@ class ArknightsWindow:
     def set_abort(self, value: bool = True):
         self._abort_flag = bool(value)
 
-    def is_visible(self, element_or_name: Union[UIElement, str], confidence: Optional[float] = None, use_single_pixel: bool = False, log_checks: bool = False) -> bool:
+    def is_visible(self, element_or_name: Union[UIElement, str], confidence: Optional[float] = None, use_single_pixel: bool = True, log_checks: bool = False) -> bool:
         el = element_or_name if isinstance(element_or_name, UIElement) else get_element(element_or_name)
         if not el:
             return False
@@ -318,13 +318,13 @@ class ArknightsWindow:
         # (left as future extension to avoid changing dependencies)
         return False
 
-    def wait_visible(self, element_or_name: Union[UIElement, str], timeout: Optional[float] = None, use_single_pixel: bool = False) -> bool:
+    def wait_visible(self, element_or_name: Union[UIElement, str], timeout: Optional[float] = None, use_single_pixel: bool = True) -> bool:
         waiter = Wait(timeout=timeout or Settings.timeouts.default_timeout,
                       name=f"wait_visible:{getattr(element_or_name, 'name', str(element_or_name))}",
                       abort_check=self.should_abort)
         return waiter.until(lambda: self.is_visible(element_or_name, use_single_pixel=use_single_pixel))
 
-    def wait_gone(self, element_or_name: Union[UIElement, str], timeout: Optional[float] = None, use_single_pixel: bool = False) -> bool:
+    def wait_gone(self, element_or_name: Union[UIElement, str], timeout: Optional[float] = None, use_single_pixel: bool = True) -> bool:
         waiter = Wait(timeout=timeout or Settings.timeouts.default_timeout,
                       name=f"wait_gone:{getattr(element_or_name, 'name', str(element_or_name))}",
                       abort_check=self.should_abort)
@@ -376,7 +376,7 @@ class ArknightsWindow:
             return self.wait_visible(expect_visible, timeout=timeout)
         return True
 
-    def click_and_wait(self, click_coords, wait_coords, expected_color, mode='appear', timeout=10, check_delay=0.01, confidence=0.9, use_single_pixel: bool = False):
+    def click_and_wait(self, click_coords, wait_coords, expected_color, mode='appear', timeout=10, check_delay=0.01, confidence=0.9, use_single_pixel: bool = True):
         """
         Click at coordinates and wait for a color to appear/disappear.
         
@@ -417,7 +417,7 @@ class ArknightsWindow:
                 pass
         return ok
 
-    def wait_for_color_change(self, coords, expected_color, mode='appear', timeout=10, check_delay=0.01, confidence=0.9, use_single_pixel: bool = False):
+    def wait_for_color_change(self, coords, expected_color, mode='appear', timeout=10, check_delay=0.01, confidence=0.9, use_single_pixel: bool = True):
         """Wait for a color to appear/disappear without clicking (resilient)."""
         logger.debug(f"Waiting for {expected_color} to {mode} at {coords}")
 
@@ -438,7 +438,7 @@ class ArknightsWindow:
                 pass
         return ok
 
-    def spam_click_until_color(self, click_coords, wait_coords, expected_color, mode='appear', timeout=10, click_delay=0.5, confidence=0.9, use_single_pixel: bool = False):
+    def spam_click_until_color(self, click_coords, wait_coords, expected_color, mode='appear', timeout=10, click_delay=0.5, confidence=0.9, use_single_pixel: bool = True):
         """
         Repeatedly click at coordinates until a color appears/disappears at another location.
         

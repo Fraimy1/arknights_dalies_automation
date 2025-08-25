@@ -37,7 +37,7 @@ class DailyRecruits:
         """Clicks the nth recruitment tile (1–4)."""
         coords = self.coords[n]
         logger.debug(f"Clicking recruitment tile {n} at {coords}")
-        ark_window.click_and_wait(coords, (1460, 860), (255, 255, 255), mode='appear', timeout=5, use_single_pixel=True)
+        ark_window.click_and_wait(coords, (1460, 860), (255, 255, 255), mode='appear', timeout=5)
 
     def _refresh_available(self):
         """Check if the refresh button is available."""
@@ -68,19 +68,19 @@ class DailyRecruits:
         """Click the hiring tile to start the recruitment process."""
         coords = self.coords[i][0], self.coords[i][1]+136
         logger.debug(f"Clicking hiring tile {i} at {coords}")
-        ark_window.spam_click_until_color(coords, (1833, 51), (255, 255, 255), mode='appear', timeout=5, use_single_pixel=True)
+        ark_window.spam_click_until_color(coords, (1833, 51), (255, 255, 255), mode='appear', timeout=5)
 
     def _skip_button(self):
         """Click the skip button to skip the hiring animation."""
         logger.debug("Waiting for skip button to appear and clicking it")
         
         # Wait for skip button to appear, then click and wait for main UI to return
-        if ark_window.wait_for_color_change((1833, 51), (255, 255, 255), mode='appear', timeout=10, use_single_pixel=True):
-            ark_window.click_and_wait((1833, 51), (847, 120), (255, 255, 255), mode='disappear', timeout=10, use_single_pixel=True)
+        if ark_window.wait_for_color_change((1833, 51), (255, 255, 255), mode='appear', timeout=10):
+            ark_window.click_and_wait((1833, 51), (847, 120), (255, 255, 255), mode='disappear', timeout=10)
         else:
             logger.warning("Skip button never appeared, continuing anyway")
 
-        ark_window.spam_click_until_color((1833, 51), (1717, 52), (255, 255, 255), mode='appear', timeout=15, use_single_pixel=True)
+        ark_window.spam_click_until_color((1833, 51), (1717, 52), (255, 255, 255), mode='appear', timeout=15)
         
     def check_tile(self, i):
         """Check the status of the hiring tile."""        
@@ -111,7 +111,7 @@ class DailyRecruits:
         
         # Set time to 9h, then confirm recruitment, then wait for loading to finish
         ark_window.click(674, 449)
-        ark_window.spam_click_until_color((1463, 876), (1539, 865), (0, 153, 220), mode='disappear', timeout=10, use_single_pixel=True)
+        ark_window.spam_click_until_color((1463, 876), (1539, 865), (0, 153, 220), mode='disappear', timeout=10)
 
     def _do_expedite(self, i):
         """Use expedite to speed up the recruitment process."""
@@ -119,8 +119,8 @@ class DailyRecruits:
         logger.debug(f"Expediting recruitment for tile {i}")
         
         # Click expedite button and wait for confirmation dialog, then confirm
-        ark_window.spam_click_until_color(expedite_coords, (1432, 748), (255, 255, 255), mode='appear', timeout=5, use_single_pixel=True)
-        ark_window.spam_click_until_color((1432, 748), (1432, 748), (255, 255, 255), mode='disappear', timeout=3, use_single_pixel=True)
+        ark_window.spam_click_until_color(expedite_coords, (1432, 748), (255, 255, 255), mode='appear', timeout=5)
+        ark_window.spam_click_until_color((1432, 748), (1432, 748), (255, 255, 255), mode='disappear', timeout=3)
         
     def do_recruitment(self):
         """Perform a full recruitment cycle."""
@@ -140,7 +140,7 @@ class DailyRecruits:
 
                 if self.rare_option_available():
                     logger.info(f"Rare recruitment option available for tile {i}")
-                    ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5, use_single_pixel=True)
+                    ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5)
                     continue
 
                 self._confirm_recruitment(i)
@@ -157,7 +157,7 @@ class DailyRecruits:
 
                     if self.rare_option_available():
                         logger.info(f"Rare recruitment option available for tile {i}")
-                        ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5, use_single_pixel=True)
+                        ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5)
                         continue
 
                     logger.info(f"Finish on recruitment: final cycle for tile {i}")
@@ -474,6 +474,161 @@ class Friends:
         friend_menu_color = get_element('friends_menu').pixel_points[0][2]
         ark_window.wait_for_color_change(friend_menu_coords, friend_menu_color, mode='appear', timeout=20)
 
+class Terminal:
+    """
+    This class automates the terminal process in Arknights.
+    """
+    
+    def __init__(self, amount_orundum: int = 0, total_proxy_available: bool = None, amount_sanity: int = 174, orundum_income: int = 330, orundum_cap: int = 1800, sanity_taken: int = 25):
+        self.amount_orundum = amount_orundum
+        self.total_proxy_available = total_proxy_available
+        self.amount_sanity = amount_sanity
+        self.orundum_income = orundum_income
+        self.orundum_cap = orundum_cap
+        self.sanity_taken = sanity_taken
+
+    def open_orundum_switch(self):
+        """Open the orundum farming panel."""
+        orundum_menu_coords = get_element('orundum_menu_button').click_coords
+        orundum_menu_color = get_element('orundum_menu_button').pixel_points[0][2]
+
+        ark_window.click_and_wait(orundum_menu_coords, orundum_menu_coords, orundum_menu_color, mode='disappear', timeout=5)
+
+        back_button_coords = get_element('back_button').click_coords
+        sleep(0.5)
+        ark_window.click(*back_button_coords)
+        sleep(1)
+        orundum_switch_coords = get_element('orundum_location_switch_button').click_coords
+        wait_coords = get_element('orundum_current_mission').click_coords
+        wait_color = get_element('orundum_current_mission').pixel_points[0][2]
+        ark_window.click_and_wait(orundum_switch_coords, wait_coords, wait_color, mode='appear', timeout=5)
+    
+    def open_location(self, location: str|int):
+        """Open the orundum farming panel."""
+        if isinstance(location, int):
+            location = f"orundum_permanent_mission_{location}"
+        elif get_element(location).pixel_points is None:
+            logger.warning(f"Location {location} is not a valid location. Defaulting to permanent mission 1")
+            location = f"orundum_permanent_mission_1"
+        
+        location_coords = get_element(location).click_coords
+        location_color = get_element(location).pixel_points[0][2]
+
+        ark_window.click_and_wait(location_coords, location_coords, location_color, mode='disappear', timeout=5)
+        
+        start_button_coords = get_element('start_button').click_coords
+        start_button_color = get_element('start_button').pixel_points[0][2]
+        ark_window.wait_for_color_change(start_button_coords, start_button_color, mode='appear', timeout=10)
+
+    def _is_auto_deploy_on(self):
+        """Check if the auto deploy is on."""
+        auto_deploy_coords = get_element('auto_deploy_button').click_coords
+        auto_deploy_color = get_element('auto_deploy_button').pixel_points[0][2]
+        return ark_window.check_color_at(*auto_deploy_coords, auto_deploy_color, confidence=1)
+
+    def _is_total_proxy_available(self):
+        """Check if the total proxy is available."""
+        total_proxy_coords = get_element('total_proxy_available').click_coords
+        total_proxy_color = get_element('total_proxy_available').pixel_points[0][2]
+
+        if self._is_auto_deploy_on():
+            auto_deploy_coords = get_element('auto_deploy_button').click_coords
+            auto_deploy_color = get_element('auto_deploy_button').pixel_points[0][2]
+            ark_window.click_and_wait(auto_deploy_coords, auto_deploy_coords, auto_deploy_color, mode='disappear', timeout=5)
+            proxy_available = ark_window.check_color_at(*total_proxy_coords, total_proxy_color, confidence=1)
+            ark_window.click_and_wait(auto_deploy_coords, auto_deploy_coords, auto_deploy_color, mode='appear', timeout=5)
+            return proxy_available
+        
+        proxy_available = ark_window.check_color_at(*total_proxy_coords, total_proxy_color, confidence=1)
+        self.total_proxy_available = bool(proxy_available)
+        
+        return proxy_available
+
+    def run_simulation(self, use_total_proxy: bool = False):
+        """Run the simulation."""
+        self.total_proxy_available = bool(self._is_total_proxy_available())
+        total_proxy_used = False
+        if use_total_proxy:
+            if self.total_proxy_available:
+                logger.info("Total proxy is available, using total proxy")
+                total_proxy_coords = get_element('total_proxy_available').click_coords
+                total_proxy_color = get_element('total_proxy_available').pixel_points[0][2]
+                ark_window.click_and_wait(total_proxy_coords, total_proxy_coords, total_proxy_color, mode='disappear', timeout=5)
+                final_timeout = 15
+                total_proxy_used = True
+            else:
+                logger.info("Total proxy is not available, deploying without it")
+        else:
+            logger.info("Using auto deploy")
+
+        sleep(0.5)
+        if not self._is_auto_deploy_on():
+            logger.info("Auto deploy is off, turning it on")
+            auto_deploy_coords = get_element('auto_deploy_button').click_coords
+            auto_deploy_color = get_element('auto_deploy_button').pixel_points[0][2]
+            if ark_window.click_and_wait(auto_deploy_coords, auto_deploy_coords, auto_deploy_color, mode='appear', timeout=5):
+                logger.info("Auto deploy is on")
+            else:
+                logger.info("Auto deploy is already on")
+        else:
+            logger.info("Auto deploy is on")
+        
+        start_button_coords = get_element('start_button').click_coords
+        start_button_color = get_element('start_button').pixel_points[0][2]
+        ark_window.click_and_wait(start_button_coords, start_button_coords, start_button_color, mode='disappear', timeout=5)
+
+        mission_start_button_coords = get_element('mission_start_button').click_coords
+        mission_start_button_color = get_element('mission_start_button').pixel_points[0][2]
+        ark_window.click_and_wait(mission_start_button_coords, mission_start_button_coords, mission_start_button_color, mode='disappear', timeout=5)
+
+        # Wait for mission_complete_screen element (verifies all 3 confirmation points)
+        if not total_proxy_used:
+            final_timeout = 2400
+            sleep(15)
+        else:
+            final_timeout = 10
+        if ark_window.wait_visible('mission_complete_screen', timeout=final_timeout):
+            logger.info("Mission complete screen appeared")
+        else:
+            logger.info("Mission complete screen did not appear")
+        # Click the mission_complete_screen and wait until it disappears (all points gone)
+        ark_window.tap('mission_complete_screen')
+        ark_window.wait_gone('mission_complete_screen', timeout=5)
+        
+        ark_window.wait_for_color_change(start_button_coords, start_button_color, mode='appear', timeout=20)
+    
+    def run_multiple_simulations(self, use_total_proxy: bool = False, amount_orundum: int = None, total_proxy_available: bool = None, amount_sanity: int = None):
+        """Run multiple simulations."""
+        if amount_orundum is None:
+            amount_orundum = self.amount_orundum
+        if total_proxy_available is None:
+            total_proxy_available = self.total_proxy_available
+        if amount_sanity is None:
+            amount_sanity = self.amount_sanity
+        from math import ceil
+        simulations_needed = ceil((self.orundum_cap - self.amount_orundum) / self.orundum_income)
+        sanity_needed = simulations_needed * self.sanity_taken
+        
+        if amount_sanity < self.sanity_taken:
+            logger.warning(f"Not enough sanity to run a single simulation. Need {sanity_needed} sanity.")
+            return False
+
+        if amount_sanity < sanity_needed:
+            simulations_possible = amount_sanity // self.sanity_taken
+            logger.warning(f"Not enough sanity to run {simulations_needed} simulations. Need {sanity_needed} sanity. Running {simulations_possible} simulations.")
+            simulations_needed = simulations_possible
+
+        logger.info(f"Running {simulations_needed} simulations")
+        
+        for i in range(simulations_needed):
+            logger.info(f"Running simulation {i + 1} of {simulations_needed}...")
+            self.run_simulation(use_total_proxy=use_total_proxy)
+            self.amount_orundum += self.orundum_income
+            self.amount_sanity -= self.sanity_taken
+        
+        logger.info(f"Orundum gained: {self.amount_orundum}, Sanity: ~{self.amount_sanity}")
+        return True
+        
 if __name__ == "__main__":
     main_menu = MainMenu()
     base = Base()
@@ -481,15 +636,10 @@ if __name__ == "__main__":
     task_aggregator = TaskAggregator(use_expedite=False)
     missions = Missions()
     friends = Friends()
+    terminal = Terminal()
     
-    task_aggregator.run_friends_dailies()
-    # task_aggregator.run_all_dailies()
-    # TODO: Fix navigate to recruitment panel
-    # main_menu.navigate_to('tile_recruit', 'recruitment_indicator')
-    # daily_recruits.do_daily_recruits()
-    # daily_recruits.do_daily_recruits()
-    # main_menu.return_to_main_menu()
-    # print(main_menu.is_main_menu_visible())
-    # aggregator = TaskAggregator(use_expedite=False)
-    # aggregator.run_all_dailies()
-    # base = Base()
+    # terminal.open_orundum_switch()
+    # terminal.open_location(1)
+    terminal.run_multiple_simulations(use_total_proxy=False, amount_orundum=410, total_proxy_available=None, amount_sanity=150)
+    main_menu.return_to_main_menu()
+    task_aggregator.run_all_dailies()

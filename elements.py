@@ -141,6 +141,77 @@ ELEMENTS: Dict[str, UIElement] = {
         pixel_points=[(1645, 68, (111, 37, 0))],
         click_coords=(1800, 943),
     ),
+    # Orundum farming
+    "orundum_menu_button": UIElement(
+        name="orundum_menu_button",
+        pixel_points=[(1600, 210, (200, 42, 54))],
+        click_coords=(1600, 210),
+    ),
+    "orundum_location_switch_button": UIElement(
+        name="orundum_location_switch",
+        pixel_points=[(1690, 1000, (0, 0, 0))],
+        click_coords=(1690, 1000),
+    ),
+    "orundum_current_mission": UIElement(
+        name="orundum_current_mission",
+        pixel_points=[(1350, 144, (255, 255, 255))],
+        click_coords=(1350, 144),
+    ),
+    "orundum_permanent_mission_1": UIElement(
+        name="orundum_permanent_mission_1",
+        pixel_points=[(1350, 366, (255, 255, 255))],
+        click_coords=(1349, 366),
+    ),
+    "orundum_permanent_mission_2": UIElement(
+        name="orundum_permanent_mission_2",
+        pixel_points=[(1350, 517, (255, 255, 255))],
+        click_coords=(1347, 517),
+    ),
+    "orundum_permanent_mission_3": UIElement(
+        name="orundum_permanent_mission_3",
+        pixel_points=[(1350, 669, (255, 255, 255))],
+        click_coords=(1349, 669),
+    ),
+    "auto_deploy_button": UIElement(
+        name="auto_deploy_button",
+        pixel_points=[(1600, 886, (255, 255, 255))],
+        click_coords=(1600, 886),
+    ),
+    "total_proxy_available": UIElement(
+        name="total_proxy_available",
+        pixel_points=[(1436, 886, (66, 198, 255))],
+        click_coords=(1436, 886),
+    ),
+    "start_button": UIElement(
+        name="start_button",
+        pixel_points=[(1775, 1025, (35, 35, 35))],
+        click_coords=(1775, 1025),
+    ),
+    "mission_start_button": UIElement(
+        name="mission_start_button",
+        pixel_points=[(1340, 70, (255, 255, 255))],
+        click_coords=(1735, 950),
+    ),
+    "mission_complete_screen": UIElement(
+        name="mission_complete_screen",
+        pixel_points=[
+            (20, 340, (76, 76, 76)),
+            (20, 465, (76, 76, 76)), 
+            (100, 455, (0, 0, 0))
+        ], # Rhodes Island logo
+        click_coords=(100, 455),
+    ),
+    # #! Positions of orundum region on the screen change every 2-4 weeks
+    # "orundum_region_yan_lungmen": UIElement(
+    #     name="orundum_region_yan_lungmen",
+    #     pixel_points=None,
+    #     click_coords=(300, 375),
+    # ),
+    # "orundum_lungmen_outskirts": UIElement(
+    #     name="orundum_lungmen_outskirts",
+    #     pixel_points=None,
+    #     click_coords=(700,600),
+    # )
 }
 
 
