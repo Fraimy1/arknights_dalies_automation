@@ -46,6 +46,11 @@ ELEMENTS: Dict[str, UIElement] = {
         pixel_points=[(130, 50, (49, 49, 49))],
         click_coords=(130, 50),
     ),
+    'confirm_button': UIElement(
+        name="confirm_button",
+        pixel_points=[(1260, 727, (255, 255, 255))],
+        click_coords=(1260, 727),
+    ),
     # Indicators
     "main_menu_indicators": UIElement(
         name="main_menu_indicators",
@@ -71,6 +76,10 @@ ELEMENTS: Dict[str, UIElement] = {
             (720, 30, (49, 49, 49)), # Daily missions
             (1860, 70, (225, 225, 225)), # Campaign missions
         ],
+    ),
+    "friends_indicator": UIElement(
+        name="friends_indicator",
+        pixel_points=[(100, 345, (255, 255, 255))],
     ),
     # Optional named tiles to use with tap/safe_click (click-only; no pixel checks)
     "tile_recruit": UIElement(name="tile_recruit", click_coords=(1500, 760)),
@@ -115,6 +124,22 @@ ELEMENTS: Dict[str, UIElement] = {
         name="weekly_mission_button",
         pixel_points=[(1280, 30, (255, 255, 255))],
         click_coords=(1280, 30),
+    ),
+    # Friends
+    "friends_menu": UIElement(
+        name="friends_menu",
+        pixel_points=[(100, 345, (255, 255, 255))],
+        click_coords=(100, 345),
+    ),
+    "friend_tile": UIElement(
+        name="friend_tile",
+        pixel_points=None,
+        click_coords=(1623, 260),
+    ),
+    "next_button": UIElement(
+        name="next_button",
+        pixel_points=[(1645, 68, (111, 37, 0))],
+        click_coords=(1800, 943),
     ),
 }
 

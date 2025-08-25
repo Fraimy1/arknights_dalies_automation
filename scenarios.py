@@ -217,8 +217,7 @@ class Base:
         Detect notification button position based on color check.
         Returns: 'upper', 'lower', or None if no notification present.
         """
-        from config import ELEMENT_COORDS
-        check_coords = ELEMENT_COORDS["notification_color_check"]
+        check_coords = get_element("notification_color_check").click_coords
         color = ark_window.get_pixel_color(*check_coords)
         red, green, blue = color
         
@@ -270,24 +269,25 @@ class Base:
             ark_window.click(*click_coords)
             sleep(1)
 
-    def click_base_factory_tiles(self):
-        """Click the base factory tiles."""
-        sleep(1)
-        ark_window.click(*get_element('notification_upper').click_coords)
-        sleep(2)
-        ark_window.click(*get_element('notification_upper').click_coords)
-        sleep(1)
-        for i in range(1, 5):
-            element_name = f"base_factory_{i}"
-            coords = get_element(element_name).click_coords
-            color = get_element(element_name).pixel_points[0][2]    
-            if ark_window.check_color_at(*coords, color, confidence=1):
-                ark_window.click_and_wait(coords, coords, color, mode='disappear', timeout=5)
-                logger.debug(f"Clicking base factory tile {i} at {coords} with color {color}")
-            else:
-                logger.debug(f"Base factory tile {i} is already clicked")
-                continue
-            sleep(1)
+    #* Deprecated because there is a setting to click all tiles at once
+    # def click_base_factory_tiles(self):
+    #     """Click the base factory tiles."""
+    #     sleep(1)
+    #     ark_window.click(*get_element('notification_upper').click_coords)
+    #     sleep(2)
+    #     ark_window.click(*get_element('notification_upper').click_coords)
+    #     sleep(1)
+    #     for i in range(1, 5):
+    #         element_name = f"base_factory_{i}"
+    #         coords = get_element(element_name).click_coords
+    #         color = get_element(element_name).pixel_points[0][2]    
+    #         if ark_window.check_color_at(*coords, color, confidence=1):
+    #             ark_window.click_and_wait(coords, coords, color, mode='disappear', timeout=5)
+    #             logger.debug(f"Clicking base factory tile {i} at {coords} with color {color}")
+    #         else:
+    #             logger.debug(f"Base factory tile {i} is already clicked")
+    #             continue
+    #         sleep(1)
 
 class TaskAggregator:
     """
@@ -299,6 +299,7 @@ class TaskAggregator:
         self.base = Base()
         self.main_menu = MainMenu()
         self.missions = Missions()
+        self.friends = Friends()
         logger.info("TaskAggregator initialized")
     
     def run_base_dailies(self):
@@ -311,8 +312,8 @@ class TaskAggregator:
         
         # Execute base tasks
         sleep(2.5)
-        self.base.click_base_factory_tiles()
-        sleep(3)
+        # self.base.click_base_factory_tiles()
+        # sleep(3)
         if self.base.open_notification():
             self.base.click_notification_tiles()
             self.base.close_notification()
@@ -356,6 +357,24 @@ class TaskAggregator:
         self.main_menu.return_to_main_menu()
         return True
     
+    def run_friends_dailies(self):
+        """Execute friends daily tasks."""
+        logger.info("Starting friends dailies...")
+        # Navigate to friends
+        if not self.main_menu.navigate_to('tile_friends', 'friends_panel'):
+            logger.error("Failed to navigate to friends")
+            return False
+        
+        # Execute friends tasks
+        self.friends.open_friends()
+        self.friends.click_next_button()
+        self.friends.exit_friends()
+        logger.info("Friends dailies completed")
+        
+        # Return to main menu
+        self.main_menu.return_to_main_menu()
+        return True
+
     def run_all_dailies(self):
         """Execute all daily tasks in sequence."""
         logger.info("Starting all daily tasks...")
@@ -413,22 +432,64 @@ class Missions:
         self.collect_daily_rewards()
         self.collect_weekly_rewards()
 
+class Friends:
+    """
+    This class automates the friends process in Arknights.
+    """
+    
+    def __init__(self):
+        pass
+    
+    def open_friends(self):
+        """Open the friends panel."""
+        friend_menu_coords = get_element('friends_menu').click_coords
+        friend_menu_color = get_element('friends_menu').pixel_points[0][2]
+        ark_window.click_and_wait(friend_menu_coords, friend_menu_coords, friend_menu_color, mode='disappear', timeout=5)
+        friend_tile_coords = get_element('friend_tile').click_coords
+        ark_window.spam_click_until_color(friend_tile_coords, friend_menu_coords, (49, 49, 49), mode='disappear', timeout=10)
+        wait_coords = (1645, 68)
+        wait_color = (111, 37, 0)
+        ark_window.wait_for_color_change(wait_coords, wait_color, mode='appear', timeout=17)
+    
+    def click_next_button(self):
+        """Click the next button."""
+        next_button_coords = get_element('next_button').click_coords
+        wait_color = get_element('next_button').pixel_points[0][2]
+        wait_coords = (1645, 68)
+
+        for _ in range(10):
+            ark_window.click_and_wait(next_button_coords, wait_coords, wait_color, mode='disappear', timeout=5)
+            sleep(0.5)
+            ark_window.wait_for_color_change(wait_coords, wait_color, mode='appear', timeout=15)
+   
+    def exit_friends(self):
+        """Exit the friends panel."""
+        ark_window.safe_click(get_element('back_button').click_coords, expect_visible=None)
+        confirm_coords = get_element('confirm_button').click_coords
+        confirm_color = get_element('confirm_button').pixel_points[0][2]
+        ark_window.wait_for_color_change(confirm_coords, confirm_color, mode='appear', timeout=5)
+        ark_window.click_and_wait(confirm_coords, confirm_coords, confirm_color, mode='disappear', timeout=5)
+        
+        friend_menu_coords = get_element('friends_menu').click_coords
+        friend_menu_color = get_element('friends_menu').pixel_points[0][2]
+        ark_window.wait_for_color_change(friend_menu_coords, friend_menu_color, mode='appear', timeout=20)
+
 if __name__ == "__main__":
     main_menu = MainMenu()
     base = Base()
     daily_recruits = DailyRecruits(use_expedite=False)
     task_aggregator = TaskAggregator(use_expedite=False)
     missions = Missions()
-    task_aggregator.run_missions_dailies()
+    friends = Friends()
+    
+    task_aggregator.run_friends_dailies()
     # task_aggregator.run_all_dailies()
     # TODO: Fix navigate to recruitment panel
     # main_menu.navigate_to('tile_recruit', 'recruitment_indicator')
     # daily_recruits.do_daily_recruits()
     # daily_recruits.do_daily_recruits()
     # main_menu.return_to_main_menu()
-    # base.click_base_factory_tiles()
     # print(main_menu.is_main_menu_visible())
     # aggregator = TaskAggregator(use_expedite=False)
     # aggregator.run_all_dailies()
     # base = Base()
-    # base.click_base_factory_tiles()
