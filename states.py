@@ -7,17 +7,21 @@ from elements import get_element
 MAIN_MENU = "main_menu"
 RECRUITMENT_PANEL = "recruitment_panel"
 BASE_PANEL = "base_panel"
+MISSIONS_PANEL = "missions_panel"
 
 def is_state(window, state_name: str) -> bool:
     if state_name == MAIN_MENU:
         el = get_element("main_menu_indicators")
-        return window.is_visible(el) if el else False
+        return window.is_visible(el, use_single_pixel=True, log_checks=True) if el else False
     if state_name == RECRUITMENT_PANEL:
         el = get_element("recruitment_indicator")
-        return window.is_visible(el) if el else False
+        return window.is_visible(el, use_single_pixel=True, log_checks=True) if el else False
     if state_name == BASE_PANEL:
         el = get_element("base_indicator")
-        return window.is_visible(el) if el else False
+        return window.is_visible(el, use_single_pixel=True, log_checks=True) if el else False
+    if state_name == MISSIONS_PANEL:
+        el = get_element("missions_indicators")
+        return window.is_visible(el, use_single_pixel=True, log_checks=True) if el else False
     return False
 
 

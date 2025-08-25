@@ -45,42 +45,8 @@ class Observability:
     annotation_thickness_px: int = 2
 
 
-# Named coordinates and regions used by ergonomic APIs and states.
-# Fill in or adjust as needed for your setup.
-ELEMENT_COORDS = {
-    # Buttons
-    "refresh_button": (1450, 604),
-    "confirm_recruitment_button": (1463, 876),
-    "skip_button": (1833, 51),
-    "back_button": (130, 50),
-    "notification_upper": (1802, 140),
-    "notification_lower": (1802, 207),
-    "notification_color_check": (1828, 115),
-    # Indicators
-    "recruitment_indicator": (1225, 28),
-    "base_indicator": (270, 168),
-    # Main menu tiles (migrated from MainMenu.tile_coords)
-    "tile_recruit": (1500, 760),
-    "tile_headhunt": (1760, 760),
-    "tile_store": (1300, 720),
-    "tile_missions": (1200, 900),
-    "tile_base": (1550, 950),
-    "tile_terminal": (1450, 250),
-    "tile_friends": (540, 850),
-    # Base notification positions
-    "notification_upper": (1802, 140),
-    "notification_lower": (1802, 207),
-    "notification_color_check": (1828, 115),
-    #Base factories notifications positions
-    "base_factory_1": (586, 452),
-    "base_factory_2": (246, 564),
-    "base_factory_3": (700, 564),
-    "base_factory_4": (361, 678), 
-    # Missions
-    "mission_collect_all_button": (1508, 210),
-    "weekly_mission_button": (1280, 30),
-
-}
+# Keeping coordinates inside elements.py now; left here intentionally empty.
+ELEMENT_COORDS = {}
 
 
 class Settings:

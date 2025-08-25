@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
-from config import ELEMENT_COORDS
 
 
 @dataclass
@@ -28,38 +27,30 @@ def _as_rgb(rgb_or_none):
 ELEMENTS: Dict[str, UIElement] = {
     "skip_button": UIElement(
         name="skip_button",
-        pixel_points=[(ELEMENT_COORDS.get("skip_button", (0, 0))[0],
-                      ELEMENT_COORDS.get("skip_button", (0, 0))[1],
-                      (255, 255, 255))],
-        click_coords=ELEMENT_COORDS.get("skip_button"),
+        pixel_points=[(1833, 51, (255, 255, 255))],
+        click_coords=(1833, 51),
     ),
 
     "refresh_button": UIElement(
         name="refresh_button",
-        pixel_points=[(ELEMENT_COORDS.get("refresh_button", (0, 0))[0],
-                      ELEMENT_COORDS.get("refresh_button", (0, 0))[1],
-                      (0, 153, 220))],
-        click_coords=ELEMENT_COORDS.get("refresh_button"),
+        pixel_points=[(1450, 604, (0, 153, 220))],
+        click_coords=(1450, 604),
     ),
     "confirm_recruitment_button": UIElement(
         name="confirm_recruitment_button",
-        pixel_points=[(ELEMENT_COORDS.get("confirm_recruitment_button", (0, 0))[0],
-                      ELEMENT_COORDS.get("confirm_recruitment_button", (0, 0))[1],
-                      (0, 153, 220))],
-        click_coords=ELEMENT_COORDS.get("confirm_recruitment_button"),
+        pixel_points=[(1463, 876, (0, 153, 220))],
+        click_coords=(1463, 876),
     ),
     "back_button": UIElement(
         name="back_button",
-        pixel_points=[(ELEMENT_COORDS.get("back_button", (0, 0))[0],
-                      ELEMENT_COORDS.get("back_button", (0, 0))[1],
-                      (49, 49, 49))],
-        click_coords=ELEMENT_COORDS.get("back_button"),
+        pixel_points=[(130, 50, (49, 49, 49))],
+        click_coords=(130, 50),
     ),
     # Indicators
     "main_menu_indicators": UIElement(
         name="main_menu_indicators",
         pixel_points=[
-            (1355, 110, (255, 255, 255)), # Originium icon
+            (1366, 110, (255, 255, 255)), # Originium icon
             (69, 78, (255, 255, 255)), # Settings icon
             (160, 75, (255, 255, 255)), # Info icon
             (290, 75, (255, 255, 255)), # Mail icon
@@ -67,48 +58,63 @@ ELEMENTS: Dict[str, UIElement] = {
     ),
     "recruitment_indicator": UIElement(
         name="recruitment_indicator",
-        pixel_points=[(ELEMENT_COORDS.get("recruitment_indicator", (0, 0))[0],
-                      ELEMENT_COORDS.get("recruitment_indicator", (0, 0))[1],
-                      (255, 255, 255))],
+        pixel_points=[(1225, 28, (255, 255, 255))],
     ),
     "base_indicator": UIElement(
         name="base_indicator",
-        pixel_points=[(ELEMENT_COORDS.get("base_indicator", (0, 0))[0],
-                      ELEMENT_COORDS.get("base_indicator", (0, 0))[1],
-                      (255, 255, 255))],
+        pixel_points=[(270, 168, (255, 255, 255))],
+    ),
+    "missions_indicators": UIElement(
+        name="missions_indicators",
+        pixel_points=[
+            (1280, 30, (225, 225, 225)), # Weeklymission
+            (720, 30, (49, 49, 49)), # Daily missions
+            (1860, 70, (225, 225, 225)), # Campaign missions
+        ],
     ),
     # Optional named tiles to use with tap/safe_click (click-only; no pixel checks)
-    "tile_recruit": UIElement(name="tile_recruit", click_coords=ELEMENT_COORDS.get("tile_recruit")),
-    "tile_headhunt": UIElement(name="tile_headhunt", click_coords=ELEMENT_COORDS.get("tile_headhunt")),
-    "tile_store": UIElement(name="tile_store", click_coords=ELEMENT_COORDS.get("tile_store")),
-    "tile_missions": UIElement(name="tile_missions", click_coords=ELEMENT_COORDS.get("tile_missions")),
-    "tile_base": UIElement(name="tile_base", click_coords=ELEMENT_COORDS.get("tile_base")),
-    "tile_terminal": UIElement(name="tile_terminal", click_coords=ELEMENT_COORDS.get("tile_terminal")),
-    "tile_friends": UIElement(name="tile_friends", click_coords=ELEMENT_COORDS.get("tile_friends")),
+    "tile_recruit": UIElement(name="tile_recruit", click_coords=(1500, 760)),
+    "tile_headhunt": UIElement(name="tile_headhunt", click_coords=(1760, 760)),
+    "tile_store": UIElement(name="tile_store", click_coords=(1300, 720)),
+    "tile_missions": UIElement(name="tile_missions", click_coords=(1200, 900)),
+    "tile_base": UIElement(name="tile_base", click_coords=(1550, 950)),
+    "tile_terminal": UIElement(name="tile_terminal", click_coords=(1450, 250)),
+    "tile_friends": UIElement(name="tile_friends", click_coords=(540, 850)),
     
     # Base notification elements (click-only; position determined by color check)
-    "notification_upper": UIElement(name="notification_upper", click_coords=ELEMENT_COORDS.get("notification_upper")),
-    "notification_lower": UIElement(name="notification_lower", click_coords=ELEMENT_COORDS.get("notification_lower")),
-    "notification_color_check": UIElement(name="notification_color_check", click_coords=ELEMENT_COORDS.get("notification_color_check")),
+    "notification_upper": UIElement(name="notification_upper", click_coords=(1802, 140)),
+    "notification_lower": UIElement(name="notification_lower", click_coords=(1802, 207)),
+    "notification_color_check": UIElement(name="notification_color_check", click_coords=(1828, 115)),
     "base_factory_1": UIElement(
         name="base_factory_1", 
-        pixel_points=[(*ELEMENT_COORDS.get("base_factory_1"), (255, 216, 2))],
-        click_coords=ELEMENT_COORDS.get("base_factory_1"),
+        pixel_points=[(586, 452, (255, 216, 2))],
+        click_coords=(586, 452),
     ),
     "base_factory_2": UIElement(
         name="base_factory_2", 
-        pixel_points=[(*ELEMENT_COORDS.get("base_factory_2"), (255, 216, 2))],
-        click_coords=ELEMENT_COORDS.get("base_factory_2"),
+        pixel_points=[(246, 564, (255, 216, 2))],
+        click_coords=(246, 564),
     ),
     "base_factory_3": UIElement(
         name="base_factory_3", 
-        pixel_points=[(*ELEMENT_COORDS.get("base_factory_3"), (255, 216, 2))],
-        click_coords=ELEMENT_COORDS.get("base_factory_3"),
+        pixel_points=[(700, 564, (255, 216, 2))],
+        click_coords=(700, 564),
     ),
     "base_factory_4": UIElement(
         name="base_factory_4", 
-        pixel_points=[(*ELEMENT_COORDS.get("base_factory_4"), (255, 216, 2))],
-        click_coords=ELEMENT_COORDS.get("base_factory_4"),
+        pixel_points=[(361, 678, (255, 216, 2))],
+        click_coords=(361, 678),
+    ),
+    # Missions
+    "mission_collect_all_button": UIElement(
+        name="mission_collect_all_button",
+        pixel_points=[(1508, 210, (0, 152, 220))],
+        click_coords=(1508, 210),
+    ),
+    "weekly_mission_button": UIElement(
+        name="weekly_mission_button",
+        pixel_points=[(1280, 30, (255, 255, 255))],
+        click_coords=(1280, 30),
     ),
 }
 

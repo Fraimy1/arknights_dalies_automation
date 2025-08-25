@@ -37,7 +37,7 @@ class DailyRecruits:
         """Clicks the nth recruitment tile (1–4)."""
         coords = self.coords[n]
         logger.debug(f"Clicking recruitment tile {n} at {coords}")
-        ark_window.click_and_wait(coords, (1460, 860), (255, 255, 255), mode='appear', timeout=5)
+        ark_window.click_and_wait(coords, (1460, 860), (255, 255, 255), mode='appear', timeout=5, use_single_pixel=True)
 
     def _refresh_available(self):
         """Check if the refresh button is available."""
@@ -68,19 +68,19 @@ class DailyRecruits:
         """Click the hiring tile to start the recruitment process."""
         coords = self.coords[i][0], self.coords[i][1]+136
         logger.debug(f"Clicking hiring tile {i} at {coords}")
-        ark_window.spam_click_until_color(coords, (1833, 51), (255, 255, 255), mode='appear', timeout=5)
+        ark_window.spam_click_until_color(coords, (1833, 51), (255, 255, 255), mode='appear', timeout=5, use_single_pixel=True)
 
     def _skip_button(self):
         """Click the skip button to skip the hiring animation."""
         logger.debug("Waiting for skip button to appear and clicking it")
         
         # Wait for skip button to appear, then click and wait for main UI to return
-        if ark_window.wait_for_color_change((1833, 51), (255, 255, 255), mode='appear', timeout=10):
-            ark_window.click_and_wait((1833, 51), (847, 120), (255, 255, 255), mode='disappear', timeout=10)
+        if ark_window.wait_for_color_change((1833, 51), (255, 255, 255), mode='appear', timeout=10, use_single_pixel=True):
+            ark_window.click_and_wait((1833, 51), (847, 120), (255, 255, 255), mode='disappear', timeout=10, use_single_pixel=True)
         else:
             logger.warning("Skip button never appeared, continuing anyway")
 
-        ark_window.spam_click_until_color((1833, 51), (1717, 52), (255, 255, 255), mode='appear', timeout=15)
+        ark_window.spam_click_until_color((1833, 51), (1717, 52), (255, 255, 255), mode='appear', timeout=15, use_single_pixel=True)
         
     def check_tile(self, i):
         """Check the status of the hiring tile."""        
@@ -111,7 +111,7 @@ class DailyRecruits:
         
         # Set time to 9h, then confirm recruitment, then wait for loading to finish
         ark_window.click(674, 449)
-        ark_window.spam_click_until_color((1463, 876), (1539, 865), (0, 153, 220), mode='disappear', timeout=10)
+        ark_window.spam_click_until_color((1463, 876), (1539, 865), (0, 153, 220), mode='disappear', timeout=10, use_single_pixel=True)
 
     def _do_expedite(self, i):
         """Use expedite to speed up the recruitment process."""
@@ -119,8 +119,8 @@ class DailyRecruits:
         logger.debug(f"Expediting recruitment for tile {i}")
         
         # Click expedite button and wait for confirmation dialog, then confirm
-        ark_window.spam_click_until_color(expedite_coords, (1432, 748), (255, 255, 255), mode='appear', timeout=5)
-        ark_window.spam_click_until_color((1432, 748), (1432, 748), (255, 255, 255), mode='disappear', timeout=3)
+        ark_window.spam_click_until_color(expedite_coords, (1432, 748), (255, 255, 255), mode='appear', timeout=5, use_single_pixel=True)
+        ark_window.spam_click_until_color((1432, 748), (1432, 748), (255, 255, 255), mode='disappear', timeout=3, use_single_pixel=True)
         
     def do_recruitment(self):
         """Perform a full recruitment cycle."""
@@ -140,7 +140,7 @@ class DailyRecruits:
 
                 if self.rare_option_available():
                     logger.info(f"Rare recruitment option available for tile {i}")
-                    ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5)
+                    ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5, use_single_pixel=True)
                     continue
 
                 self._confirm_recruitment(i)
@@ -157,7 +157,7 @@ class DailyRecruits:
 
                     if self.rare_option_available():
                         logger.info(f"Rare recruitment option available for tile {i}")
-                        ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5)
+                        ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5, use_single_pixel=True)
                         continue
 
                     logger.info(f"Finish on recruitment: final cycle for tile {i}")
@@ -170,39 +170,6 @@ class MainMenu:
     """
     This class automates the main menu process in Arknights.
     """
-
-    # def __init__(self):
-    #     self.tile_coords = { 
-    #         'recruit': (1500, 760),
-    #         'headhunt': (1760, 760),
-    #         'store': (1300, 720),
-    #         'missions': (1200, 900),
-    #         'base': (1550, 950),
-    #         'terminal': (1450, 250),
-    #         'friends': (540, 850),
-    #     }
-
-        # self.return_coords = {
-        #     'recruit': {'check_coords': (1350, 110), 'return_coords': (50,50)},
-        #     'base': {'check_coords': (1350, 110), 'return_coords': (50,50)},
-        # }
-    
-    # def click_tile(self, tile_name):
-    #     """Click the tile with the given name."""
-    #     click_coords = self.tile_coords[tile_name]
-    #     check_coords = self.return_coords[tile_name]['check_coords']
-    #     logger.debug(f"Clicking tile {tile_name} at {click_coords}")
-    #     ark_window.click_and_wait(click_coords, check_coords, (255, 255, 255), mode='disappear', timeout=15)
-
-    # def open_main_menu(self, tile_name):
-    #     """Open the main menu."""
-    #     return_coords = self.return_coords[tile_name]['return_coords']
-    #     check_coords = self.return_coords[tile_name]['check_coords']
-    #     if return_coords != (50, 50):
-    #         ark_window.click_and_wait((400, 50), (0, 0), (27, 27, 27), mode='appear', timeout=5)
-    #         sleep(0.2)
-    #     ark_window.click_and_wait(return_coords, check_coords, (255, 255, 255), mode='appear', timeout=15)
-    
     def is_main_menu_visible(self):
         # Use consolidated multi-point check
         return ark_window.is_visible("main_menu_indicators")
@@ -331,6 +298,7 @@ class TaskAggregator:
         self.daily_recruits = DailyRecruits(use_expedite=use_expedite, finish_on_recruitment=finish_on_recruitment)
         self.base = Base()
         self.main_menu = MainMenu()
+        self.missions = Missions()
         logger.info("TaskAggregator initialized")
     
     def run_base_dailies(self):
@@ -371,6 +339,22 @@ class TaskAggregator:
         # Return to main menu
         self.main_menu.return_to_main_menu()
         return True
+
+    def run_missions_dailies(self):
+        """Execute missions daily tasks."""
+        logger.info("Starting missions dailies...")
+        # Navigate to missions
+        if not self.main_menu.navigate_to('tile_missions', 'missions_panel'):
+            logger.error("Failed to navigate to missions")
+            return False
+        sleep(1)
+        # Execute missions tasks
+        self.missions.collect_all_rewards()
+        logger.info("Missions dailies completed")
+        
+        # Return to main menu
+        self.main_menu.return_to_main_menu()
+        return True
     
     def run_all_dailies(self):
         """Execute all daily tasks in sequence."""
@@ -396,6 +380,8 @@ class TaskAggregator:
         
         logger.info("All daily tasks completed")
 
+
+
 class Missions:
     """
     This class automates the missions process in Arknights.
@@ -406,14 +392,35 @@ class Missions:
     
     def collect_daily_rewards(self):
         """Collect the daily rewards."""
+        coords = get_element('mission_collect_all_button').click_coords
+        color = get_element('mission_collect_all_button').pixel_points[0][2]
+        for _ in range(3):
+            ark_window.click_and_wait(coords, coords, color, mode='disappear', timeout=5)
+    
+    def collect_weekly_rewards(self):
+        """Collect the weekly rewards."""
+        weekly_coords = get_element('weekly_mission_button').click_coords
+        weekly_color = get_element('weekly_mission_button').pixel_points[0][2]
+        ark_window.click_and_wait(weekly_coords, weekly_coords, weekly_color, mode='disappear', timeout=5)
         
+        collect_coords = get_element('mission_collect_all_button').click_coords
+        collect_color = get_element('mission_collect_all_button').pixel_points[0][2]
+        for _ in range(3):
+            ark_window.click_and_wait(collect_coords, collect_coords, collect_color, mode='disappear', timeout=5)
+    
+    def collect_all_rewards(self):
+        """Collect all rewards."""
+        self.collect_daily_rewards()
+        self.collect_weekly_rewards()
 
 if __name__ == "__main__":
     main_menu = MainMenu()
     base = Base()
     daily_recruits = DailyRecruits(use_expedite=False)
     task_aggregator = TaskAggregator(use_expedite=False)
-    task_aggregator.run_all_dailies()
+    missions = Missions()
+    task_aggregator.run_missions_dailies()
+    # task_aggregator.run_all_dailies()
     # TODO: Fix navigate to recruitment panel
     # main_menu.navigate_to('tile_recruit', 'recruitment_indicator')
     # daily_recruits.do_daily_recruits()
