@@ -9,6 +9,7 @@ RECRUITMENT_PANEL = "recruitment_panel"
 BASE_PANEL = "base_panel"
 MISSIONS_PANEL = "missions_panel"
 FRIENDS_PANEL = "friends_panel"
+TERMINAL_PANEL = "terminal_panel"
 
 def is_state(window, state_name: str) -> bool:
     if state_name == MAIN_MENU:
@@ -25,6 +26,9 @@ def is_state(window, state_name: str) -> bool:
         return window.is_visible(el, log_checks=True) if el else False
     if state_name == FRIENDS_PANEL:
         el = get_element("friends_indicator")
+        return window.is_visible(el, log_checks=True) if el else False
+    if state_name == TERMINAL_PANEL:
+        el = get_element("terminal_indicator")
         return window.is_visible(el, log_checks=True) if el else False
     return False
 

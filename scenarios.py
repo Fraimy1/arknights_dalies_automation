@@ -10,82 +10,88 @@ import pyautogui as pg
 # Physical: X=3829,Y=264; Scaled: X=3829,Y=264; Relative: X=1269,Y=576; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
 # Physical: X=3327,Y=372; Scaled: X=3327,Y=372; Relative: X=767,Y=684; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
 # Physical: X=3575,Y=369; Scaled: X=3575,Y=369; Relative: X=1015,Y=681; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
-recruitment_status_coords = {
-    1: (763, 578),
-    2: (1019, 575),
-    3: (1269, 576),
-    4: (767, 684),
-    5: (1015, 681),
-}
+# Recruitment tag rows handled via elements: recruitment_tag_1..5
 class DailyRecruits:
     """
     This class automates the daily recruitment process in Arknights.
     """
     
     def __init__(self, use_expedite=False, finish_on_recruitment=True):
-        self.coords = {
-            1: (486, 435),
-            2: (1433, 435),
-            3: (486, 851),
-            4: (1433, 851),
-        }
         self.use_expedite = use_expedite
         self.finish_on_recruitment = finish_on_recruitment
         logger.debug(f"DailyRecruits initialized: expedite={self.use_expedite}, finish_on_recruitment={self.finish_on_recruitment}")
 
     def _click_recruitment_tile(self, n: int):
         """Clicks the nth recruitment tile (1–4)."""
-        coords = self.coords[n]
-        logger.debug(f"Clicking recruitment tile {n} at {coords}")
-        ark_window.click_and_wait(coords, (1460, 860), (255, 255, 255), mode='appear', timeout=5)
+        tile_element_name = f"recruitment_tile_{n}"
+        tile_coords = get_element(tile_element_name).click_coords
+        logger.debug(f"Clicking recruitment tile {n} at {tile_coords}")
+        ark_window.tap(tile_element_name)
+        ark_window.wait_visible('recruitment_panel_indicator', timeout=5)
 
     def _refresh_available(self):
         """Check if the refresh button is available."""
-        coords = (1450, 604)
-        is_available = ark_window.check_color_at(*coords, (0, 153, 220), confidence=1)
+        refresh_button = get_element('recruit_refresh_button')
+        refresh_button_coords = refresh_button.click_coords
+        refresh_button_color = refresh_button.pixel_points[0][2]
+        is_available = ark_window.check_color_at(*refresh_button_coords, refresh_button_color, confidence=1)
         logger.debug(f"Refresh button available: {is_available}")
         return is_available
 
     def _click_refresh_button(self):
         """Click the refresh button to refresh the recruitment options."""
-        coords = (1450, 604)
-        logger.debug(f"Clicking refresh button at {coords}")
-        ark_window.click_and_wait(coords, (1260, 727), (255, 255, 255), mode='appear', timeout=5)
-        ark_window.spam_click_until_color((1260, 727), (1260, 727), (255, 255, 255), mode='disappear', timeout=5)  # Confirm refresh
+        refresh_button = get_element('recruit_refresh_button')
+        refresh_confirm = get_element('recruit_refresh_confirm')
+        logger.debug(f"Clicking refresh button at {refresh_button.click_coords}")
+        ark_window.tap('recruit_refresh_button')
+        ark_window.wait_visible('recruit_refresh_confirm', timeout=5)
+        ark_window.tap('recruit_refresh_confirm')
+        ark_window.wait_gone('recruit_refresh_confirm', timeout=5)
 
     def rare_option_available(self):
-        """Check the recruitment options to see if they match desired criteria."""
+        """Check the recruitment tag rows; non-(49,49,49) indicates rare."""
         for i in range(1, 6):
-            coords = recruitment_status_coords[i]
-            if not ark_window.check_color_at(*coords, (49, 49, 49), confidence=1):
+            recruitment_tag_element = get_element(f'recruitment_tag_{i}')
+            recruitment_tag_coords = recruitment_tag_element.click_coords
+            recruitment_tag_common_color = recruitment_tag_element.pixel_points[0][2]
+            if not ark_window.check_color_at(*recruitment_tag_coords, recruitment_tag_common_color, confidence=1):
                 logger.debug(f"Recruitment option {i} is rare")
                 return True
-            else:
-                logger.debug(f"Recruitment option {i} is common")
+            logger.debug(f"Recruitment option {i} is common")
         return False
 
     def _click_hiring_tile(self, i):
         """Click the hiring tile to start the recruitment process."""
-        coords = self.coords[i][0], self.coords[i][1]+136
-        logger.debug(f"Clicking hiring tile {i} at {coords}")
-        ark_window.spam_click_until_color(coords, (1833, 51), (255, 255, 255), mode='appear', timeout=5)
+        hiring_tile_element_name = f"hiring_tile_{i}"
+        hiring_tile_coords = get_element(hiring_tile_element_name).click_coords
+        logger.debug(f"Clicking hiring tile {i} at {hiring_tile_coords}")
+        ark_window.tap(hiring_tile_element_name)
+        ark_window.wait_visible('skip_button_anchor', timeout=5)
 
     def _skip_button(self):
         """Click the skip button to skip the hiring animation."""
         logger.debug("Waiting for skip button to appear and clicking it")
-        
-        # Wait for skip button to appear, then click and wait for main UI to return
-        if ark_window.wait_for_color_change((1833, 51), (255, 255, 255), mode='appear', timeout=10):
-            ark_window.click_and_wait((1833, 51), (847, 120), (255, 255, 255), mode='disappear', timeout=10)
+        if ark_window.wait_visible('skip_button_anchor', timeout=10):
+            ark_window.tap('skip_button_anchor')
+            ark_window.wait_gone('post_skip_wait_point', timeout=10)
         else:
             logger.warning("Skip button never appeared, continuing anyway")
+        recruitment_indicator_coords = get_element('recruitment_indicator').pixel_points[0][:2]
+        recruitment_indicator_color = get_element('recruitment_indicator').pixel_points[0][2]
+        ark_window.spam_click_until_color(
+            click_coords=recruitment_indicator_coords,
+            wait_coords=recruitment_indicator_coords,
+            expected_color=recruitment_indicator_color,
+            mode='appear',
+            timeout=20,
+        )
 
-        ark_window.spam_click_until_color((1833, 51), (1717, 52), (255, 255, 255), mode='appear', timeout=15)
-        
     def check_tile(self, i):
         """Check the status of the hiring tile."""        
         logger.debug(f"Checking tile status for tile {i}")
-        is_plus = ark_window.check_color_at(*self.coords[i], (255, 255, 255), confidence=1)
+        tile_center_element_name = f"recruitment_tile_{i}"
+        tile_center_coords = get_element(tile_center_element_name).click_coords
+        is_plus = ark_window.check_color_at(*tile_center_coords, (255, 255, 255), confidence=1)
 
         # There are only 3 states in which recruitment can be:
         # 1. No recruitment in progress (plus sign)
@@ -95,8 +101,9 @@ class DailyRecruits:
             logger.debug(f"Tile {i} status: no_recruitment")
             return 'no_recruitment'
         else:
-            recruitment_permit_coords = ark_window.get_scaled_coords(self.coords[i][0]-105, self.coords[i][1]+25)
-            recruitment_in_progress = ark_window.check_color_at(*recruitment_permit_coords, (255, 255, 255), confidence=1)
+            permit_element_name = f"recruitment_permit_{i}"
+            permit_coords = get_element(permit_element_name).click_coords
+            recruitment_in_progress = ark_window.check_color_at(*permit_coords, (255, 255, 255), confidence=1)
 
             if recruitment_in_progress:
                 logger.debug(f"Tile {i} status: recruitment_in_progress")
@@ -108,19 +115,20 @@ class DailyRecruits:
     def _confirm_recruitment(self, i):
         """Confirm recruitment by setting time to 9h and confirming."""
         logger.debug(f"Confirming recruitment for tile {i}")
-        
-        # Set time to 9h, then confirm recruitment, then wait for loading to finish
-        ark_window.click(674, 449)
-        ark_window.spam_click_until_color((1463, 876), (1539, 865), (0, 153, 220), mode='disappear', timeout=10)
+        ark_window.tap('recruit_confirm_button_top')
+        ark_window.tap('recruit_confirm_button_bottom')
+        ark_window.wait_gone('recruit_confirm_state_pixel', timeout=10)
 
     def _do_expedite(self, i):
         """Use expedite to speed up the recruitment process."""
-        expedite_coords = (self.coords[i][0]+220, self.coords[i][1]+145)
+        expedite_button_element_name = f'expedite_button_{i}'
         logger.debug(f"Expediting recruitment for tile {i}")
         
         # Click expedite button and wait for confirmation dialog, then confirm
-        ark_window.spam_click_until_color(expedite_coords, (1432, 748), (255, 255, 255), mode='appear', timeout=5)
-        ark_window.spam_click_until_color((1432, 748), (1432, 748), (255, 255, 255), mode='disappear', timeout=3)
+        ark_window.tap(expedite_button_element_name)
+        if ark_window.wait_visible('expedite_confirm', timeout=5):
+            ark_window.tap('expedite_confirm')
+            ark_window.wait_gone('expedite_confirm', timeout=3)
         
     def do_recruitment(self):
         """Perform a full recruitment cycle."""
@@ -130,9 +138,12 @@ class DailyRecruits:
             self._click_recruitment_tile(i)
             self._confirm_recruitment(i)
 
-    def do_daily_recruits(self):
+    def do_daily_recruits(self, use_expedite: bool = None):
+        if use_expedite is not None:
+            self.use_expedite = use_expedite
         """Main method to execute the daily recruitment scenario based on chosen mode."""
         for i in range(1, 5):
+            sleep(1)
             tile_status = self.check_tile(i)
             logger.info(f"Tile {i} status: {tile_status} in main loop")
             if tile_status == 'no_recruitment':
@@ -140,7 +151,8 @@ class DailyRecruits:
 
                 if self.rare_option_available():
                     logger.info(f"Rare recruitment option available for tile {i}")
-                    ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5)
+                    ark_window.tap('recruit_close_panel_button')
+                    ark_window.wait_gone('recruitment_panel_indicator', timeout=5)
                     continue
 
                 self._confirm_recruitment(i)
@@ -157,7 +169,8 @@ class DailyRecruits:
 
                     if self.rare_option_available():
                         logger.info(f"Rare recruitment option available for tile {i}")
-                        ark_window.click_and_wait((1461, 955), (1461, 955), (255, 255, 255), mode='disappear', timeout=5)
+                        ark_window.tap('recruit_close_panel_button')
+                        ark_window.wait_gone('recruitment_panel_indicator', timeout=5)
                         continue
 
                     logger.info(f"Finish on recruitment: final cycle for tile {i}")
@@ -300,6 +313,9 @@ class TaskAggregator:
         self.main_menu = MainMenu()
         self.missions = Missions()
         self.friends = Friends()
+        self.terminal = Terminal()
+        self.use_expedite = use_expedite
+        self.finish_on_recruitment = finish_on_recruitment
         logger.info("TaskAggregator initialized")
     
     def run_base_dailies(self):
@@ -311,7 +327,7 @@ class TaskAggregator:
             return False
         
         # Execute base tasks
-        sleep(2.5)
+        sleep(7)
         # self.base.click_base_factory_tiles()
         # sleep(3)
         if self.base.open_notification():
@@ -334,7 +350,8 @@ class TaskAggregator:
             return False
         
         # Execute recruitment tasks
-        self.daily_recruits.do_daily_recruits()
+        self.daily_recruits.do_daily_recruits(use_expedite=self.use_expedite)
+        self.daily_recruits.do_daily_recruits(use_expedite=False)
         logger.info("Recruitment dailies completed")
         
         # Return to main menu
@@ -375,13 +392,33 @@ class TaskAggregator:
         self.main_menu.return_to_main_menu()
         return True
 
+    def run_terminal_dailies(self):
+        """Execute terminal daily tasks."""
+        logger.info("Starting terminal dailies...")
+        # Navigate to terminal
+        if not self.main_menu.navigate_to('tile_terminal', 'terminal_panel'):
+            logger.error("Failed to navigate to terminal")
+            return False
+        
+        # Execute terminal tasks
+        self.terminal.run_simulation(use_total_proxy=True)
+        logger.info("Terminal dailies completed")
+        
+        # Return to main menu
+        self.main_menu.return_to_main_menu()
+        return True
+
     def run_all_dailies(self):
         """Execute all daily tasks in sequence."""
         logger.info("Starting all daily tasks...")
         
         tasks = [
-            ("Recruitment", self.run_recruitment_dailies),
-            ("Base", self.run_base_dailies),
+            # ("Recruitment", self.run_recruitment_dailies),
+            # ("Base", self.run_base_dailies),
+            # ("Friends", self.run_friends_dailies),
+            # ("Missions", self.run_missions_dailies),
+            # ("Terminal", self.run_terminal_dailies),
+            ("Missions", self.run_missions_dailies),
         ]
         
         for task_name, task_func in tasks:
@@ -398,8 +435,6 @@ class TaskAggregator:
                 self.main_menu.return_to_main_menu()
         
         logger.info("All daily tasks completed")
-
-
 
 class Missions:
     """
@@ -446,7 +481,8 @@ class Friends:
         friend_menu_color = get_element('friends_menu').pixel_points[0][2]
         ark_window.click_and_wait(friend_menu_coords, friend_menu_coords, friend_menu_color, mode='disappear', timeout=5)
         friend_tile_coords = get_element('friend_tile').click_coords
-        ark_window.spam_click_until_color(friend_tile_coords, friend_menu_coords, (49, 49, 49), mode='disappear', timeout=10)
+        sleep(2)
+        ark_window.spam_click_until_color(friend_tile_coords, friend_menu_coords, (49, 49, 49), mode='disappear', timeout=15, click_delay=0.7)
         wait_coords = (1645, 68)
         wait_color = (111, 37, 0)
         ark_window.wait_for_color_change(wait_coords, wait_color, mode='appear', timeout=17)
@@ -587,12 +623,23 @@ class Terminal:
             sleep(15)
         else:
             final_timeout = 10
-        if ark_window.wait_visible('mission_complete_screen', timeout=final_timeout):
-            logger.info("Mission complete screen appeared")
+        if total_proxy_used:
+            if ark_window.wait_visible('mission_complete_screen', timeout=final_timeout):
+                logger.info("Mission complete screen appeared")
+            else:
+                logger.info("Mission complete screen did not appear")
         else:
-            logger.info("Mission complete screen did not appear")
+            if ark_window.wait_visible('mission_non_proxy_complete_screen', timeout=final_timeout):
+                logger.info("Mission complete screen appeared")
+            else:
+                logger.info("Mission complete screen did not appear")
         # Click the mission_complete_screen and wait until it disappears (all points gone)
-        ark_window.tap('mission_complete_screen')
+        if total_proxy_used:
+            ark_window.tap('mission_complete_screen')
+            ark_window.tap('mission_complete_screen')
+        else:
+            ark_window.tap('mission_non_proxy_complete_screen')
+            ark_window.tap('mission_non_proxy_complete_screen')
         ark_window.wait_gone('mission_complete_screen', timeout=5)
         
         ark_window.wait_for_color_change(start_button_coords, start_button_color, mode='appear', timeout=20)
@@ -638,8 +685,4 @@ if __name__ == "__main__":
     friends = Friends()
     terminal = Terminal()
     
-    # terminal.open_orundum_switch()
-    # terminal.open_location(1)
-    terminal.run_multiple_simulations(use_total_proxy=False, amount_orundum=410, total_proxy_available=None, amount_sanity=150)
-    main_menu.return_to_main_menu()
     task_aggregator.run_all_dailies()

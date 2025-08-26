@@ -335,7 +335,8 @@ class ArknightsWindow:
         if not el:
             logger.warning(f"tap: element '{element_name}' not found in registry")
             return False
-        coords = el.click_coords or (el.pixel_points[0][0], el.pixel_points[0][1]) if el.pixel_points else None
+        # Prefer explicit click coords; if absent, fall back to first pixel anchor
+        coords = el.click_coords or ((el.pixel_points[0][0], el.pixel_points[0][1]) if el.pixel_points else None)
         if not coords:
             logger.warning(f"tap: element '{element_name}' has no click coordinates")
             return False
@@ -438,7 +439,7 @@ class ArknightsWindow:
                 pass
         return ok
 
-    def spam_click_until_color(self, click_coords, wait_coords, expected_color, mode='appear', timeout=10, click_delay=0.5, confidence=0.9, use_single_pixel: bool = True):
+    def spam_click_until_color(self, click_coords, wait_coords, expected_color, mode='appear', timeout=10, click_delay=0.5, confidence=1, use_single_pixel: bool = True):
         """
         Repeatedly click at coordinates until a color appears/disappears at another location.
         
@@ -456,8 +457,9 @@ class ArknightsWindow:
 
         def condition_met() -> bool:
             if use_single_pixel:
-                return self.check_color_at(*wait_coords, expected_color, confidence=1 if confidence is None else confidence)
-            ok = self.check_color_at_robust(*wait_coords, expected_color, confidence=max(confidence, Settings.colors.default_confidence))
+                ok = self.check_color_at(*wait_coords, expected_color, confidence=1 if confidence is None else confidence)
+            else:
+                ok = self.check_color_at_robust(*wait_coords, expected_color, confidence=max(confidence, Settings.colors.default_confidence))
             return ok if mode == 'appear' else (not ok)
 
         if condition_met():

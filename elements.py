@@ -55,7 +55,7 @@ ELEMENTS: Dict[str, UIElement] = {
     "main_menu_indicators": UIElement(
         name="main_menu_indicators",
         pixel_points=[
-            (1366, 110, (255, 255, 255)), # Originium icon
+            (1348, 110, (255, 255, 255)), # Originium icon
             (69, 78, (255, 255, 255)), # Settings icon
             (160, 75, (255, 255, 255)), # Info icon
             (290, 75, (255, 255, 255)), # Mail icon
@@ -81,6 +81,10 @@ ELEMENTS: Dict[str, UIElement] = {
         name="friends_indicator",
         pixel_points=[(100, 345, (255, 255, 255))],
     ),
+    "terminal_indicator": UIElement(
+        name="terminal_indicator",
+        pixel_points=[(1600, 210, (200, 42, 54))],
+    ),
     # Optional named tiles to use with tap/safe_click (click-only; no pixel checks)
     "tile_recruit": UIElement(name="tile_recruit", click_coords=(1500, 760)),
     "tile_headhunt": UIElement(name="tile_headhunt", click_coords=(1760, 760)),
@@ -89,6 +93,25 @@ ELEMENTS: Dict[str, UIElement] = {
     "tile_base": UIElement(name="tile_base", click_coords=(1550, 950)),
     "tile_terminal": UIElement(name="tile_terminal", click_coords=(1450, 250)),
     "tile_friends": UIElement(name="tile_friends", click_coords=(540, 850)),
+    # Recruitment tiles (centers)
+    #TODO: Tweak coordinates to avoid overlapping of different checks
+    "recruitment_tile_1": UIElement(name="recruitment_tile_1", pixel_points=[(486, 435, (255, 255, 255))], click_coords=(486, 435)),
+    "recruitment_tile_2": UIElement(name="recruitment_tile_2", pixel_points=[(1433, 435, (255, 255, 255))], click_coords=(1433, 435)),
+    "recruitment_tile_3": UIElement(name="recruitment_tile_3", pixel_points=[(486, 851, (255, 255, 255))], click_coords=(486, 851)),
+    "recruitment_tile_4": UIElement(name="recruitment_tile_4", pixel_points=[(1433, 851, (255, 255, 255))], click_coords=(1433, 851)),
+
+    # Recruitment tags indicators
+    "recruitment_tag_1": UIElement(name="recruitment_tag_1", pixel_points=[(763, 578, (49, 49, 49))], click_coords=(763, 578)),
+    "recruitment_tag_2": UIElement(name="recruitment_tag_2", pixel_points=[(1019, 575, (49, 49, 49))], click_coords=(1019, 575)),
+    "recruitment_tag_3": UIElement(name="recruitment_tag_3", pixel_points=[(1269, 576, (49, 49, 49))], click_coords=(1269, 576)),
+    "recruitment_tag_4": UIElement(name="recruitment_tag_4", pixel_points=[(767, 684, (49, 49, 49))], click_coords=(767, 684)),
+    "recruitment_tag_5": UIElement(name="recruitment_tag_5", pixel_points=[(1015, 681, (49, 49, 49))], click_coords=(1015, 681)),
+
+    # Recruitment permit check offset from tile center: (tile.x-105, tile.y+25)
+    "recruitment_permit_1": UIElement(name="recruitment_permit_1", pixel_points=[(381, 460, (255, 255, 255))], click_coords=(381, 460)),
+    "recruitment_permit_2": UIElement(name="recruitment_permit_2", pixel_points=[(1328, 460, (255, 255, 255))], click_coords=(1328, 460)),
+    "recruitment_permit_3": UIElement(name="recruitment_permit_3", pixel_points=[(381, 876, (255, 255, 255))], click_coords=(381, 876)),
+    "recruitment_permit_4": UIElement(name="recruitment_permit_4", pixel_points=[(1328, 876, (255, 255, 255))], click_coords=(1328, 876)),
     
     # Base notification elements (click-only; position determined by color check)
     "notification_upper": UIElement(name="notification_upper", click_coords=(1802, 140)),
@@ -125,6 +148,66 @@ ELEMENTS: Dict[str, UIElement] = {
         pixel_points=[(1280, 30, (255, 255, 255))],
         click_coords=(1280, 30),
     ),
+
+    # Recruitment flow buttons/points
+    "recruit_refresh_button": UIElement(
+        name="recruit_refresh_button",
+        pixel_points=[(1450, 604, (0, 153, 220))],
+        click_coords=(1450, 604),
+    ),
+    "recruitment_panel_indicator": UIElement(
+        name="recruitment_panel_indicator",
+        pixel_points=[
+            (1460, 860, (255, 255, 255)),
+            (1460, 955, (255, 255, 255)),
+            (580, 460, (49, 49, 49)),
+            ],
+        click_coords=(1460, 860),
+    ),
+    "recruit_refresh_confirm": UIElement(
+        name="recruit_refresh_confirm",
+        pixel_points=[(1260, 727, (255, 255, 255))],
+        click_coords=(1260, 727),
+    ),
+    "recruit_confirm_button_top": UIElement(
+        name="recruit_confirm_button_top",
+        pixel_points=[(674, 449, (0, 0, 0))],
+        click_coords=(674, 449),
+    ),
+    "recruit_confirm_button_bottom": UIElement(
+        name="recruit_confirm_button_bottom",
+        pixel_points=[(1463, 876, (0, 153, 220))],
+        click_coords=(1463, 876),
+    ),
+    "recruit_confirm_state_pixel": UIElement(
+        name="recruit_confirm_state_pixel",
+        pixel_points=[(1539, 865, (0, 153, 220))],
+        click_coords=(1539, 865),
+    ),
+    "recruit_close_panel_button": UIElement(
+        name="recruit_close_panel_button",
+        pixel_points=[(1461, 955, (255, 255, 255))],
+        click_coords=(1461, 955),
+    ),
+    # Hiring tile click positions per tile (center + 136 on Y)
+    "hiring_tile_1": UIElement(name="hiring_tile_1", click_coords=(486, 571)),
+    "hiring_tile_2": UIElement(name="hiring_tile_2", click_coords=(1433, 571)),
+    "hiring_tile_3": UIElement(name="hiring_tile_3", click_coords=(486, 987)),
+    "hiring_tile_4": UIElement(name="hiring_tile_4", click_coords=(1433, 987)),
+    # Expedite button per tile (tile.x+220, tile.y+145)
+    "expedite_button_1": UIElement(name="expedite_button_1", click_coords=(706, 580)),
+    "expedite_button_2": UIElement(name="expedite_button_2", click_coords=(1653, 580)),
+    "expedite_button_3": UIElement(name="expedite_button_3", click_coords=(706, 996)),
+    "expedite_button_4": UIElement(name="expedite_button_4", click_coords=(1653, 996)),
+    "expedite_confirm": UIElement(
+        name="expedite_confirm",
+        pixel_points=[(1432, 748, (255, 255, 255))],
+        click_coords=(1432, 748),
+    ),
+    # Skip button and post-skip wait points
+    "skip_button_anchor": UIElement(name="skip_button_anchor", pixel_points=[(1833, 51, (255, 255, 255))], click_coords=(1833, 51)),
+    "post_skip_wait_point": UIElement(name="post_skip_wait_point", pixel_points=[(847, 120, (255, 255, 255))], click_coords=(847, 120)),
+    "skip_end_indicator": UIElement(name="skip_end_indicator", pixel_points=[(1717, 52, (255, 255, 255))], click_coords=(1717, 52)),
     # Friends
     "friends_menu": UIElement(
         name="friends_menu",
@@ -148,7 +231,7 @@ ELEMENTS: Dict[str, UIElement] = {
         click_coords=(1600, 210),
     ),
     "orundum_location_switch_button": UIElement(
-        name="orundum_location_switch",
+        name="orundum_location_switch_button",
         pixel_points=[(1690, 1000, (0, 0, 0))],
         click_coords=(1690, 1000),
     ),
@@ -201,17 +284,11 @@ ELEMENTS: Dict[str, UIElement] = {
         ], # Rhodes Island logo
         click_coords=(100, 455),
     ),
-    # #! Positions of orundum region on the screen change every 2-4 weeks
-    # "orundum_region_yan_lungmen": UIElement(
-    #     name="orundum_region_yan_lungmen",
-    #     pixel_points=None,
-    #     click_coords=(300, 375),
-    # ),
-    # "orundum_lungmen_outskirts": UIElement(
-    #     name="orundum_lungmen_outskirts",
-    #     pixel_points=None,
-    #     click_coords=(700,600),
-    # )
+    "mission_non_proxy_complete_screen": UIElement(
+        name="mission_non_proxy_complete_screen",
+        pixel_points=[(208, 386, (255, 255, 255))],
+        click_coords=(208, 386),
+    ),
 }
 
 
