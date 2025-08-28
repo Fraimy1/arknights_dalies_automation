@@ -11,6 +11,21 @@ MISSIONS_PANEL = "missions_panel"
 FRIENDS_PANEL = "friends_panel"
 TERMINAL_PANEL = "terminal_panel"
 
+def get_state_indicator_element_name(state_name: str) -> Optional[str]:
+    if state_name == MAIN_MENU:
+        return "main_menu_indicators"
+    if state_name == RECRUITMENT_PANEL:
+        return "recruitment_indicator"
+    if state_name == BASE_PANEL:
+        return "base_indicator"
+    if state_name == MISSIONS_PANEL:
+        return "missions_indicators"
+    if state_name == FRIENDS_PANEL:
+        return "friends_indicator"
+    if state_name == TERMINAL_PANEL:
+        return "terminal_indicator"
+    return None
+
 def is_state(window, state_name: str) -> bool:
     if state_name == MAIN_MENU:
         el = get_element("main_menu_indicators")

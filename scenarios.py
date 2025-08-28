@@ -1,6 +1,7 @@
 from cv2 import exp
 from config import Settings
 from utils import ArknightsWindow, ark_window
+from states import get_state_indicator_element_name
 from elements import get_element
 from time import sleep
 from logger import logger
@@ -204,13 +205,18 @@ class MainMenu:
         # Final check
         return ark_window.wait_visible("main_menu_indicators", timeout=5.0)
 
-    def navigate_to(self, tile_name: str, target_state: str, retries: int = 21):
+    def navigate_to(self, tile_name: str, target_state: str, retries: int = 21, wait_visible_after_click: bool = True, post_click_timeout: float = 0.1):
         """
         Click a tile, confirm we arrived with target_state, retry after recovery if needed.
         """
         for attempt in range(retries + 1):
             
             ark_window.safe_click(get_element(tile_name).click_coords, expect_visible=None)
+
+            if wait_visible_after_click:
+                indicator_name = get_state_indicator_element_name(target_state)
+                if indicator_name:
+                    ark_window.wait_visible(indicator_name, timeout=post_click_timeout)
 
             if ark_window.wait_state(target_state, timeout=Settings.timeouts.default_timeout):
                 return True
@@ -307,15 +313,17 @@ class TaskAggregator:
     Aggregates and controls all daily automation tasks.
     """
     
-    def __init__(self, use_expedite=False, finish_on_recruitment=True):
+    def __init__(self, use_expedite=False, finish_on_recruitment=True, use_total_proxy=True, orundum_location=1):
         self.daily_recruits = DailyRecruits(use_expedite=use_expedite, finish_on_recruitment=finish_on_recruitment)
         self.base = Base()
         self.main_menu = MainMenu()
         self.missions = Missions()
         self.friends = Friends()
-        self.terminal = Terminal()
+        self.terminal = Terminal(use_total_proxy=use_total_proxy)
         self.use_expedite = use_expedite
         self.finish_on_recruitment = finish_on_recruitment
+        self.use_total_proxy = use_total_proxy
+        self.orundum_location = orundum_location
         logger.info("TaskAggregator initialized")
     
     def run_base_dailies(self):
@@ -396,12 +404,13 @@ class TaskAggregator:
         """Execute terminal daily tasks."""
         logger.info("Starting terminal dailies...")
         # Navigate to terminal
-        if not self.main_menu.navigate_to('tile_terminal', 'terminal_panel'):
+        if not self.main_menu.navigate_to('tile_terminal', 'terminal_panel', post_click_timeout=2):
             logger.error("Failed to navigate to terminal")
             return False
-        
         # Execute terminal tasks
-        self.terminal.run_simulation(use_total_proxy=True)
+        self.terminal.open_orundum_switch()
+        self.terminal.open_location(self.orundum_location)
+        self.terminal.run_simulation(use_total_proxy=self.use_total_proxy)
         logger.info("Terminal dailies completed")
         
         # Return to main menu
@@ -413,11 +422,11 @@ class TaskAggregator:
         logger.info("Starting all daily tasks...")
         
         tasks = [
-            # ("Recruitment", self.run_recruitment_dailies),
-            # ("Base", self.run_base_dailies),
-            # ("Friends", self.run_friends_dailies),
-            # ("Missions", self.run_missions_dailies),
-            # ("Terminal", self.run_terminal_dailies),
+            ("Recruitment", self.run_recruitment_dailies),
+            ("Base", self.run_base_dailies),
+            ("Friends", self.run_friends_dailies),
+            ("Missions", self.run_missions_dailies),
+            ("Terminal", self.run_terminal_dailies),
             ("Missions", self.run_missions_dailies),
         ]
         
@@ -515,14 +524,14 @@ class Terminal:
     This class automates the terminal process in Arknights.
     """
     
-    def __init__(self, amount_orundum: int = 0, total_proxy_available: bool = None, amount_sanity: int = 174, orundum_income: int = 330, orundum_cap: int = 1800, sanity_taken: int = 25):
+    def __init__(self, amount_orundum: int = 0, amount_sanity: int = 174, orundum_income: int = 330, orundum_cap: int = 1800, sanity_taken: int = 25, use_total_proxy: bool = False):
         self.amount_orundum = amount_orundum
-        self.total_proxy_available = total_proxy_available
         self.amount_sanity = amount_sanity
         self.orundum_income = orundum_income
         self.orundum_cap = orundum_cap
         self.sanity_taken = sanity_taken
-
+        self.use_total_proxy = use_total_proxy
+        
     def open_orundum_switch(self):
         """Open the orundum farming panel."""
         orundum_menu_coords = get_element('orundum_menu_button').click_coords
@@ -571,20 +580,26 @@ class Terminal:
             auto_deploy_coords = get_element('auto_deploy_button').click_coords
             auto_deploy_color = get_element('auto_deploy_button').pixel_points[0][2]
             ark_window.click_and_wait(auto_deploy_coords, auto_deploy_coords, auto_deploy_color, mode='disappear', timeout=5)
-            proxy_available = ark_window.check_color_at(*total_proxy_coords, total_proxy_color, confidence=1)
+            proxy_available = ark_window.check_color_at(*total_proxy_coords, total_proxy_color, confidence=0.8)
             ark_window.click_and_wait(auto_deploy_coords, auto_deploy_coords, auto_deploy_color, mode='appear', timeout=5)
+            logger.info(f"Total proxy available: {proxy_available}")
             return proxy_available
         
-        proxy_available = ark_window.check_color_at(*total_proxy_coords, total_proxy_color, confidence=1)
+        proxy_available = ark_window.check_color_at(*total_proxy_coords, total_proxy_color, confidence=0.8)
+        logger.info(f"Total proxy available: {proxy_available}")
         self.total_proxy_available = bool(proxy_available)
         
         return proxy_available
 
-    def run_simulation(self, use_total_proxy: bool = False):
+    def run_simulation(self, use_total_proxy: bool = None):
         """Run the simulation."""
+        if use_total_proxy is not None:
+            self.use_total_proxy = use_total_proxy
+        # sleep(1)
         self.total_proxy_available = bool(self._is_total_proxy_available())
+        # sleep(1)
         total_proxy_used = False
-        if use_total_proxy:
+        if self.use_total_proxy:
             if self.total_proxy_available:
                 logger.info("Total proxy is available, using total proxy")
                 total_proxy_coords = get_element('total_proxy_available').click_coords
@@ -595,7 +610,7 @@ class Terminal:
             else:
                 logger.info("Total proxy is not available, deploying without it")
         else:
-            logger.info("Using auto deploy")
+            logger.info("Total proxy is not used")
 
         sleep(0.5)
         if not self._is_auto_deploy_on():
@@ -640,9 +655,11 @@ class Terminal:
         else:
             ark_window.tap('mission_non_proxy_complete_screen')
             ark_window.tap('mission_non_proxy_complete_screen')
-        ark_window.wait_gone('mission_complete_screen', timeout=5)
         
-        ark_window.wait_for_color_change(start_button_coords, start_button_color, mode='appear', timeout=20)
+        mission_complete_coords = get_element('mission_complete_screen').click_coords
+        mission_complete_color = get_element('mission_complete_screen').pixel_points[0][2]
+        ark_window.spam_click_until_color(mission_complete_coords, start_button_coords, mission_complete_color, mode='appear', timeout=15)
+
     
     def run_multiple_simulations(self, use_total_proxy: bool = False, amount_orundum: int = None, total_proxy_available: bool = None, amount_sanity: int = None):
         """Run multiple simulations."""
@@ -680,7 +697,7 @@ if __name__ == "__main__":
     main_menu = MainMenu()
     base = Base()
     daily_recruits = DailyRecruits(use_expedite=False)
-    task_aggregator = TaskAggregator(use_expedite=False)
+    task_aggregator = TaskAggregator(use_expedite=False, use_total_proxy=True)
     missions = Missions()
     friends = Friends()
     terminal = Terminal()

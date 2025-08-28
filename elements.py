@@ -55,7 +55,7 @@ ELEMENTS: Dict[str, UIElement] = {
     "main_menu_indicators": UIElement(
         name="main_menu_indicators",
         pixel_points=[
-            (1348, 110, (255, 255, 255)), # Originium icon
+            # (1348, 110, (255, 255, 255)), # Originium icon
             (69, 78, (255, 255, 255)), # Settings icon
             (160, 75, (255, 255, 255)), # Info icon
             (290, 75, (255, 255, 255)), # Mail icon
@@ -83,7 +83,11 @@ ELEMENTS: Dict[str, UIElement] = {
     ),
     "terminal_indicator": UIElement(
         name="terminal_indicator",
-        pixel_points=[(1600, 210, (200, 42, 54))],
+        pixel_points=[
+            (1508, 212, (255, 255, 255)), # white background of Rhodes logo - right side
+            (1460, 210, (255, 255, 255)), # white background of Rhodos logo - left side
+        ],
+        
     ),
     # Optional named tiles to use with tap/safe_click (click-only; no pixel checks)
     "tile_recruit": UIElement(name="tile_recruit", click_coords=(1500, 760)),
