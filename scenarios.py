@@ -1,13 +1,9 @@
-from re import S
-from cv2 import exp
 from config import Settings
-from utils import ArknightsWindow, ark_window
+from utils import ark_window
 from states import get_state_indicator_element_name, STORE_PANEL
 from elements import get_element
 from time import sleep
 from logger import logger
-import pyautogui as pg
-
 class DailyRecruits:
     """
     This class automates the daily recruitment process in Arknights.
@@ -284,26 +280,6 @@ class Base:
             ark_window.click(*click_coords)
             sleep(1)
 
-    #* Deprecated because there is a setting to click all tiles at once
-    # def click_base_factory_tiles(self):
-    #     """Click the base factory tiles."""
-    #     sleep(1)
-    #     ark_window.click(*get_element('notification_upper').click_coords)
-    #     sleep(2)
-    #     ark_window.click(*get_element('notification_upper').click_coords)
-    #     sleep(1)
-    #     for i in range(1, 5):
-    #         element_name = f"base_factory_{i}"
-    #         coords = get_element(element_name).click_coords
-    #         color = get_element(element_name).pixel_points[0][2]    
-    #         if ark_window.check_color_at(*coords, color, confidence=1):
-    #             ark_window.click_and_wait(coords, coords, color, mode='disappear', timeout=5)
-    #             logger.debug(f"Clicking base factory tile {i} at {coords} with color {color}")
-    #         else:
-    #             logger.debug(f"Base factory tile {i} is already clicked")
-    #             continue
-    #         sleep(1)
-
 class TaskAggregator:
     """
     Aggregates and controls all daily automation tasks.
@@ -423,9 +399,9 @@ class TaskAggregator:
         logger.info("Starting all daily tasks...")
         
         tasks = [
-            # ("Recruitment", self.run_recruitment_dailies),
-            # ("Base", self.run_base_dailies),
-            # ("Friends", self.run_friends_dailies),
+            ("Recruitment", self.run_recruitment_dailies),
+            ("Base", self.run_base_dailies),
+            ("Friends", self.run_friends_dailies),
             ("Store", self.run_store_tasks),
             ("Missions", self.run_missions_dailies),
             ("Terminal", self.run_terminal_dailies),
@@ -982,9 +958,4 @@ if __name__ == "__main__":
     terminal = Terminal()
     store = Store()
 
-    # print(store.determine_rarities())
-    # print(store.buy_all_tiles(based_on=['discount', 'rarity']))
-    # print(store.is_available(2))
-    # print(store.buy_tile(3))
-    # main_menu.navigate_to('tile_store', STORE_PANEL)
     task_aggregator.run_all_dailies()
