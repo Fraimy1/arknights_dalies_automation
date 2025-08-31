@@ -291,8 +291,62 @@ ELEMENTS: Dict[str, UIElement] = {
     "mission_non_proxy_complete_screen": UIElement(
         name="mission_non_proxy_complete_screen",
         pixel_points=[(208, 386, (255, 255, 255))],
-        click_coords=(208, 386),
+        click_coords=(208, 386),    
     ),
+    "claim_button": UIElement(
+        name="claim_button",
+        pixel_points=[(1586, 60, (223, 102, 20))],
+        click_coords=(1586, 60),
+    ),
+    "buy_button_credit_store": UIElement(
+        name="buy_button_credit_store",
+        pixel_points=[(1340, 866, (255, 104, 0))],
+        click_coords=(1340, 866),
+    ),
+    "credit_store_indicator": UIElement(
+        name="credit_store_indicator",
+        pixel_points=[(1667, 66, (75, 12, 0))],
+        click_coords=(1000, 50),
+    ),
+
+    "credit_store_indicator_2": UIElement(
+        name="credit_store_indicator_2",
+        pixel_points=[(1721, 157, (255, 255, 255))],
+        click_coords=(1721, 157),
+    ),
+    "recommended_store_indicator": UIElement(
+        name="recommended_store_indicator",
+        pixel_points=[(127, 137, (255, 255, 255))],
+        click_coords=(127, 137),
+    ),
+    # 'insufficient_credit_indicator': UIElement(
+    #     name="insufficient_credit_indicator",
+    #     pixel_points=[(1488, 189, (255, 255, 255))],
+    #     click_coords=(1488, 189),
+    # ),
+    # Credit Store grid
+    # there are 5x2 tiles
+    # All tiles are 355 pixels in length
+    # And 355 pixels in height
+    # Horizontal spacing for tiles
+    # There are 24 pixels before the first tile (not including the pixel of the tile)
+    # Same 25 go for spacing between other tiles
+    # Vertical spacing: 26 pixels
+    # Upper left corner of the first tile (upper left) is x: 24, y: 221
+    # Fill up all of the tiles based on these conditions
+    # 5 in the first row, 5 in the second
+    # Store tiles: upper-left corners only (pixel_points ignored for now)
+    "store_tile_1": UIElement(name="store_tile_1", click_coords=(24, 221)),
+    "store_tile_2": UIElement(name="store_tile_2", click_coords=(403, 221)),
+    "store_tile_3": UIElement(name="store_tile_3", click_coords=(783, 221)),
+    "store_tile_4": UIElement(name="store_tile_4", click_coords=(1162, 221)),
+    "store_tile_5": UIElement(name="store_tile_5", click_coords=(1542, 221)),
+    "store_tile_6": UIElement(name="store_tile_6", click_coords=(24, 602)),
+    "store_tile_7": UIElement(name="store_tile_7", click_coords=(403, 602)),
+    "store_tile_8": UIElement(name="store_tile_8", click_coords=(783, 602)),
+    "store_tile_9": UIElement(name="store_tile_9", click_coords=(1162, 602)),
+    "store_tile_10": UIElement(name="store_tile_10", click_coords=(1542, 602)),
+    
 }
 
 

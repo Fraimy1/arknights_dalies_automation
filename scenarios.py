@@ -1,17 +1,13 @@
+from re import S
 from cv2 import exp
 from config import Settings
 from utils import ArknightsWindow, ark_window
-from states import get_state_indicator_element_name
+from states import get_state_indicator_element_name, STORE_PANEL
 from elements import get_element
 from time import sleep
 from logger import logger
 import pyautogui as pg
-# Physical: X=3323,Y=266; Scaled: X=3323,Y=266; Relative: X=763,Y=578; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
-# Physical: X=3579,Y=263; Scaled: X=3579,Y=263; Relative: X=1019,Y=575; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
-# Physical: X=3829,Y=264; Scaled: X=3829,Y=264; Relative: X=1269,Y=576; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
-# Physical: X=3327,Y=372; Scaled: X=3327,Y=372; Relative: X=767,Y=684; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
-# Physical: X=3575,Y=369; Scaled: X=3575,Y=369; Relative: X=1015,Y=681; Dpi: 96; Raw Dpi: 81; Dpi Ratio: 1,19; Screen Resolution: 1920x1080; Pixel Color: #313131
-# Recruitment tag rows handled via elements: recruitment_tag_1..5
+
 class DailyRecruits:
     """
     This class automates the daily recruitment process in Arknights.
@@ -313,17 +309,22 @@ class TaskAggregator:
     Aggregates and controls all daily automation tasks.
     """
     
-    def __init__(self, use_expedite=False, finish_on_recruitment=True, use_total_proxy=True, orundum_location=1):
+    def __init__(self, use_expedite=False, finish_on_recruitment=True, use_total_proxy=True, orundum_location=1,
+                 store_based_on: list[str] = ['discount', 'rarity'],
+                 store_rarity_priority: list[str] = ['extremely_rare_orange', 'very_rare_pink', 'rare_blue', 'uncommon_yellow', 'common_gray']):
         self.daily_recruits = DailyRecruits(use_expedite=use_expedite, finish_on_recruitment=finish_on_recruitment)
         self.base = Base()
         self.main_menu = MainMenu()
         self.missions = Missions()
         self.friends = Friends()
         self.terminal = Terminal(use_total_proxy=use_total_proxy)
+        self.store = Store()
         self.use_expedite = use_expedite
         self.finish_on_recruitment = finish_on_recruitment
         self.use_total_proxy = use_total_proxy
         self.orundum_location = orundum_location
+        self.store_based_on = store_based_on
+        self.store_rarity_priority = store_rarity_priority
         logger.info("TaskAggregator initialized")
     
     def run_base_dailies(self):
@@ -422,9 +423,10 @@ class TaskAggregator:
         logger.info("Starting all daily tasks...")
         
         tasks = [
-            ("Recruitment", self.run_recruitment_dailies),
-            ("Base", self.run_base_dailies),
-            ("Friends", self.run_friends_dailies),
+            # ("Recruitment", self.run_recruitment_dailies),
+            # ("Base", self.run_base_dailies),
+            # ("Friends", self.run_friends_dailies),
+            ("Store", self.run_store_tasks),
             ("Missions", self.run_missions_dailies),
             ("Terminal", self.run_terminal_dailies),
             ("Missions", self.run_missions_dailies),
@@ -444,6 +446,26 @@ class TaskAggregator:
                 self.main_menu.return_to_main_menu()
         
         logger.info("All daily tasks completed")
+
+    def run_store_tasks(self):
+        """Execute store tasks: navigate, claim, and buy according to priorities."""
+        logger.info("Starting store dailies...")
+        # Navigate to store
+        if not self.main_menu.navigate_to('tile_store', STORE_PANEL):
+            logger.error("Failed to navigate to store")
+            return False
+        self.store.open_credit_store()
+
+        # Claim available freebies if present
+        self.store.click_claim_button()
+
+        # Buy tiles by priority (rarity then discount)
+        self.store.buy_all_tiles(based_on=self.store_based_on, rarity_priority=self.store_rarity_priority)
+
+        # Return to main menu
+        self.main_menu.return_to_main_menu()
+        logger.info("Store dailies completed")
+        return True
 
 class Missions:
     """
@@ -626,7 +648,10 @@ class Terminal:
         
         start_button_coords = get_element('start_button').click_coords
         start_button_color = get_element('start_button').pixel_points[0][2]
-        ark_window.click_and_wait(start_button_coords, start_button_coords, start_button_color, mode='disappear', timeout=5)
+        ok = ark_window.click_and_wait(start_button_coords, start_button_coords, start_button_color, mode='disappear', timeout=5)
+        if not ok:
+            logger.info('Maximum orundum reached, returning')
+            return 'maximum_orundum_reached'
 
         mission_start_button_coords = get_element('mission_start_button').click_coords
         mission_start_button_color = get_element('mission_start_button').pixel_points[0][2]
@@ -659,7 +684,7 @@ class Terminal:
         mission_complete_coords = get_element('mission_complete_screen').click_coords
         mission_complete_color = get_element('mission_complete_screen').pixel_points[0][2]
         ark_window.spam_click_until_color(mission_complete_coords, start_button_coords, mission_complete_color, mode='appear', timeout=15)
-
+        return True
     
     def run_multiple_simulations(self, use_total_proxy: bool = False, amount_orundum: int = None, total_proxy_available: bool = None, amount_sanity: int = None):
         """Run multiple simulations."""
@@ -686,13 +711,267 @@ class Terminal:
         
         for i in range(simulations_needed):
             logger.info(f"Running simulation {i + 1} of {simulations_needed}...")
-            self.run_simulation(use_total_proxy=use_total_proxy)
+            status = self.run_simulation(use_total_proxy=use_total_proxy)
+            if status == 'maximum_orundum_reached':
+                logger.info('Maximum orundum reached, returning')
+                return True 
             self.amount_orundum += self.orundum_income
             self.amount_sanity -= self.sanity_taken
         
         logger.info(f"Orundum gained: {self.amount_orundum}, Sanity: ~{self.amount_sanity}")
         return True
+
+class Store:
+    """
+    Store screen helpers.
+    """
+    TILE_W = 355
+    TILE_H = 355
+
+    def open_credit_store(self):
+        """
+        Open the credit store.
+        """
+        ark_window.safe_click(get_element('credit_store_indicator_2').click_coords, expect_visible=STORE_PANEL)
+        ark_window.wait_visible('credit_store_indicator_2', timeout=5)
+
+    def _tile_info(self, tile_number: int):
+        """
+        Return a dict of dicts with key points for a given store tile.
+
+        - tile_number: 1..10
+        - Each entry contains base coords, and optional rgb placeholder.
+        """
+        if not (1 <= tile_number <= 10):
+            raise ValueError("tile_number must be in 1..10")
+
+        el_name = f"store_tile_{tile_number}"
+        el = get_element(el_name)
+        if not el or not el.click_coords:
+            raise ValueError(f"Element '{el_name}' not defined or missing click_coords")
+
+        x, y = el.click_coords  # top-left corner in base coordinates
+        cx = x + self.TILE_W // 2
+        cy = y + self.TILE_H // 2
+
+        info = {
+            "top_left": {
+                "coords": (x, y),
+                "rgb": None,
+            },
+            "center": {
+                "coords": (cx, cy),
+                "rgb": None,
+            },
+            "discount_position": {
+                "coords": (x + 22, y + 63),
+                "rgb": (93, 137, 0),
+            },
+            "available_position": {
+                "coords": (x + 100, y + 10),
+                "rgb": (49, 49, 49),
+            },
+            "circle_position_left": {
+                "coords": (x + 81, y + 184),
+                "rgb": None,
+            },
+            "circle_position_right": {
+                "coords": (x + 260, y + 186),
+                "rgb": None,
+            },
+            "circle_position_upper": {
+                "coords": (x + 161, y + 94),
+                "rgb": None,
+            },
+            "circle_position_lower": {
+                "coords": (x + 188, y + 272),
+                "rgb": None,
+            },
+            
+
+        }
+        return info
+
+    def _has_discount(self, tile_number: int):
+        """
+        Check if the tile has a discount.
+        """
+        discount_position = self._tile_info(tile_number)["discount_position"]["coords"]
+        discount_rgb = self._tile_info(tile_number)["discount_position"]["rgb"]
+        return ark_window.check_color_at(*discount_position, discount_rgb, confidence=1)
+    
+    def is_available(self, tile_number: int):
+        """
+        Check if the tile is sold out.
+        """
+        available_position = self._tile_info(tile_number)["available_position"]["coords"]
+        available_rgb = self._tile_info(tile_number)["available_position"]["rgb"]
+        return ark_window.check_color_at(*available_position, available_rgb, confidence=1)
+    
+    def determine_rarity(self, tile_number: int):
+        """
+        Determine the rarity of the tile.
+        """
+        import math
+        info = self._tile_info(tile_number)
+        sample_points = [
+            info["circle_position_left"]["coords"],
+            info["circle_position_right"]["coords"],
+            info["circle_position_upper"]["coords"],
+            info["circle_position_lower"]["coords"],
+        ]
+
+        # Rarity palette (BGR noted by user visuals, but we use RGB tuples here)
+        palette = {
+            "common_gray": (162, 162, 162),
+            "uncommon_yellow": (220, 229, 53),
+            "rare_blue": (0, 177, 255),
+            "very_rare_pink": (215, 198, 213),
+            "extremely_rare_orange": (255, 200, 0),
+        }
+
+        def similarity(a, b):
+            dr = a[0] - b[0]
+            dg = a[1] - b[1]
+            db = a[2] - b[2]
+            dist = math.sqrt(dr * dr + dg * dg + db * db)
+            max_dist = math.sqrt(3 * 255 * 255)
+            return max(0.0, 1.0 - dist / max_dist)
+
+        # Fetch colors at sample points
+        found = [ark_window.get_pixel_color(x, y) for (x, y) in sample_points]
+
+        # Score palette by MAX similarity over samples (robust to outliers/occlusions)
+        best_rarity = "unknown"
+        best_sim = -1.0
+        for rarity, target in palette.items():
+            max_sim = 0.0
+            for c in found:
+                s = similarity(c, target)
+                if s > max_sim:
+                    max_sim = s
+            if max_sim > best_sim:
+                best_sim = max_sim
+                best_rarity = rarity
+
+        # Require strong evidence from at least one point
+        return best_rarity if best_sim >= 0.95 else "unknown"
+
+    def determine_rarities(self):
+        """
+        Determine rarities for all 10 tiles.
+        Returns a dict {tile_number: rarity}
+        """
+        results = {}
+        for i in range(1, 11):
+            try:
+                results[i] = self.determine_rarity(i)
+            except Exception as e:
+                logger.info('Error determining rarity for tile %s', i, e)
+                results[i] = "unknown"
+        return results
+    
+    def click_claim_button(self):
+        """
+        Click the claim button.
+        """
+        claim_button_coords = get_element('claim_button').click_coords
+        claim_button_color = get_element('claim_button').pixel_points[0][2]
+        if ark_window.check_color_at(*claim_button_coords, claim_button_color, confidence=1):
+            logger.info("Claim button is available, clicking it")
+            ark_window.click_and_wait(claim_button_coords, claim_button_coords, claim_button_color, mode='disappear', timeout=5)
+
+            credit_store_indicator_coords = get_element('credit_store_indicator').click_coords
+            credit_store_indicator_color = get_element('credit_store_indicator').pixel_points[0][2]
+            ark_window.spam_click_until_color(credit_store_indicator_coords, credit_store_indicator_coords, credit_store_indicator_color, mode='appear', timeout=5)
+        else:
+            logger.info("Claim button is not available")
+
+    def buy_tile(self, tile_number: int):
+        """
+        Buy the tile.
+        """
+        info = self._tile_info(tile_number)
+        if not self.is_available(tile_number):
+            logger.info("Tile is not available")
+            return False
+        tile_coords_available = info["available_position"]["coords"]
+        buy_button_wait_coords = get_element('buy_button_credit_store').pixel_points[0][:2]
+        buy_button_color = get_element('buy_button_credit_store').pixel_points[0][2]
+        ark_window.click_and_wait(tile_coords_available, buy_button_wait_coords, buy_button_color, mode='appear', timeout=5)
         
+        buy_button_coords = get_element('buy_button_credit_store').click_coords
+        ok = ark_window.click_and_wait(buy_button_coords, buy_button_wait_coords, buy_button_color, mode='disappear', timeout=5)
+
+        if not ok:
+            logger.info("Insufficient credit, returning insufficient_credit")
+            return ok
+
+        logger.info(f"Bought tile {tile_number}")
+        sleep(0.25)
+        
+        credit_store_indicator_coords = get_element('credit_store_indicator').click_coords
+        credit_store_indicator_wait_coords = get_element('credit_store_indicator').pixel_points[0][:2]
+        credit_store_indicator_color = get_element('credit_store_indicator').pixel_points[0][2]
+        ark_window.spam_click_until_color(credit_store_indicator_coords, credit_store_indicator_wait_coords, credit_store_indicator_color, mode='appear', timeout=5)
+        ark_window.wait_visible('credit_store_indicator', timeout=5)
+        
+        return True
+
+    #TODO: Implement "item" determination and add it to buy_all_tiles
+    def buy_all_tiles(self, based_on: list[str] = ['rarity', 'discount'], rarity_priority: list[str] = ['extremely_rare_orange', 'very_rare_pink', 'rare_blue', 'uncommon_yellow', 'common_gray']):
+        """
+        Buy all tiles based on characteristics.
+        based_on can take in these strings: "rarity", "discount", "item"
+        Importance is determined by the order of the list.
+        Also, the rarity priority is determined by the order of the list.
+        The default rarity priority is extremely_rare_orange, very_rare_pink, rare_blue, uncommon_yellow, common_gray.
+        """
+        # Prepare ranking for rarities (lower rank => buy earlier)
+        rarity_rank = {name: idx for idx, name in enumerate(rarity_priority)}
+        unknown_rank = len(rarity_priority) + 1
+
+        # Determine rarities for all tiles once
+        rarities = self.determine_rarities()
+
+        # Consider only tiles that are available
+        candidates = [i for i in range(1, 11) if self.is_available(i)]
+
+        def sort_key(tile_index: int):
+            parts = []
+            for criterion in based_on:
+                if criterion == 'rarity':
+                    r = rarities.get(tile_index, 'unknown')
+                    parts.append(rarity_rank.get(r, unknown_rank))
+                elif criterion == 'discount':
+                    # True (has discount) should be bought earlier → use 0 for True, 1 for False
+                    has_disc = self._has_discount(tile_index)
+                    parts.append(0 if has_disc else 1)
+                elif criterion == 'item':
+                    # Not implemented yet; ignore
+                    continue
+            # Final tie-breaker: lower tile index first
+            parts.append(tile_index)
+            return tuple(parts)
+
+        # Sort according to based_on priorities and buy in that order
+        sorted_tiles = sorted(candidates, key=sort_key)
+
+        bought = []
+        for idx in sorted_tiles:
+            status = self.buy_tile(idx)
+            if status == 'insufficient_credit':
+                logger.info("Insufficient credit, returning bought tiles")
+                logger.info(f"Bought tiles: {bought}")
+                return bought
+            elif not status:
+                logger.info("Tile is not available")
+            else:
+                bought.append(idx)
+        
+        logger.info(f"Bought tiles: {bought}")
+        return bought
+
 if __name__ == "__main__":
     main_menu = MainMenu()
     base = Base()
@@ -701,5 +980,11 @@ if __name__ == "__main__":
     missions = Missions()
     friends = Friends()
     terminal = Terminal()
-    
+    store = Store()
+
+    # print(store.determine_rarities())
+    # print(store.buy_all_tiles(based_on=['discount', 'rarity']))
+    # print(store.is_available(2))
+    # print(store.buy_tile(3))
+    # main_menu.navigate_to('tile_store', STORE_PANEL)
     task_aggregator.run_all_dailies()
