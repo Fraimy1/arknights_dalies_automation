@@ -303,14 +303,15 @@ ELEMENTS: Dict[str, UIElement] = {
         pixel_points=[(1340, 866, (255, 104, 0))],
         click_coords=(1340, 866),
     ),
-    "credit_store_indicator": UIElement(
-        name="credit_store_indicator",
-        pixel_points=[(1667, 66, (75, 12, 0))],
-        click_coords=(1000, 50),
+
+    "credit_store_interface_indicator_bottom": UIElement(
+        name="credit_store_interface_indicator_bottom",
+        pixel_points=[(925, 1036, (49, 49, 49))],
+        click_coords=(925, 1036),
     ),
 
-    "credit_store_indicator_2": UIElement(
-        name="credit_store_indicator_2",
+    "credit_store_button": UIElement(
+        name="credit_store_button",
         pixel_points=[(1721, 157, (255, 255, 255))],
         click_coords=(1721, 157),
     ),

@@ -1,6 +1,6 @@
 from config import Settings
 from utils import ark_window
-from states import get_state_indicator_element_name, STORE_PANEL
+from states import get_state_indicator_element_name, STORE_PANEL, CREDIT_STORE_PANEL
 from elements import get_element
 from time import sleep
 from logger import logger
@@ -404,8 +404,8 @@ class TaskAggregator:
             ("Friends", self.run_friends_dailies),
             ("Store", self.run_store_tasks),
             ("Missions", self.run_missions_dailies),
-            ("Terminal", self.run_terminal_dailies),
-            ("Missions", self.run_missions_dailies),
+            # ("Terminal", self.run_terminal_dailies),
+            # ("Missions", self.run_missions_dailies),
         ]
         
         for task_name, task_func in tasks:
@@ -436,7 +436,11 @@ class TaskAggregator:
         self.store.click_claim_button()
 
         # Buy tiles by priority (rarity then discount)
-        self.store.buy_all_tiles(based_on=self.store_based_on, rarity_priority=self.store_rarity_priority)
+        result = self.store.buy_all_tiles(based_on=self.store_based_on, rarity_priority=self.store_rarity_priority)
+        if result == 'insufficient_credit':
+            logger.info("Stopping store tasks due to insufficient credit; returning to main menu")
+            self.main_menu.return_to_main_menu()
+            return True
 
         # Return to main menu
         self.main_menu.return_to_main_menu()
@@ -657,9 +661,19 @@ class Terminal:
             ark_window.tap('mission_non_proxy_complete_screen')
             ark_window.tap('mission_non_proxy_complete_screen')
         
-        mission_complete_coords = get_element('mission_complete_screen').click_coords
-        mission_complete_color = get_element('mission_complete_screen').pixel_points[0][2]
-        ark_window.spam_click_until_color(mission_complete_coords, start_button_coords, mission_complete_color, mode='appear', timeout=15)
+        mission_complete_el = get_element('mission_complete_screen')
+        mission_complete_coords = mission_complete_el.click_coords
+        # Use the color that corresponds to the exact wait coordinate (fallback to first anchor)
+        mc_color = None
+        if mission_complete_el.pixel_points:
+            for px, py, rgb in mission_complete_el.pixel_points:
+                if (px, py) == mission_complete_coords:
+                    mc_color = rgb
+                    break
+        if mc_color is None:
+            mc_color = mission_complete_el.pixel_points[0][2]
+        ark_window.spam_click_until_color(mission_complete_coords, mission_complete_coords, mc_color, mode='disappear', timeout=15)
+        
         return True
     
     def run_multiple_simulations(self, use_total_proxy: bool = False, amount_orundum: int = None, total_proxy_available: bool = None, amount_sanity: int = None):
@@ -708,8 +722,7 @@ class Store:
         """
         Open the credit store.
         """
-        ark_window.safe_click(get_element('credit_store_indicator_2').click_coords, expect_visible=STORE_PANEL)
-        ark_window.wait_visible('credit_store_indicator_2', timeout=5)
+        ark_window.safe_click('credit_store_button', expect_visible='credit_store_interface_indicator_bottom')
 
     def _tile_info(self, tile_number: int):
         """
@@ -857,8 +870,8 @@ class Store:
             logger.info("Claim button is available, clicking it")
             ark_window.click_and_wait(claim_button_coords, claim_button_coords, claim_button_color, mode='disappear', timeout=5)
 
-            credit_store_indicator_coords = get_element('credit_store_indicator').click_coords
-            credit_store_indicator_color = get_element('credit_store_indicator').pixel_points[0][2]
+            credit_store_indicator_coords = get_element('credit_store_interface_indicator_bottom').click_coords
+            credit_store_indicator_color = get_element('credit_store_interface_indicator_bottom').pixel_points[0][2]
             ark_window.spam_click_until_color(credit_store_indicator_coords, credit_store_indicator_coords, credit_store_indicator_color, mode='appear', timeout=5)
         else:
             logger.info("Claim button is not available")
@@ -881,16 +894,16 @@ class Store:
 
         if not ok:
             logger.info("Insufficient credit, returning insufficient_credit")
-            return ok
+            return 'insufficient_credit'
 
         logger.info(f"Bought tile {tile_number}")
         sleep(0.25)
         
-        credit_store_indicator_coords = get_element('credit_store_indicator').click_coords
-        credit_store_indicator_wait_coords = get_element('credit_store_indicator').pixel_points[0][:2]
-        credit_store_indicator_color = get_element('credit_store_indicator').pixel_points[0][2]
+        credit_store_indicator_coords = get_element('credit_store_interface_indicator_bottom').click_coords
+        credit_store_indicator_wait_coords = get_element('credit_store_interface_indicator_bottom').pixel_points[0][:2]
+        credit_store_indicator_color = get_element('credit_store_interface_indicator_bottom').pixel_points[0][2]
         ark_window.spam_click_until_color(credit_store_indicator_coords, credit_store_indicator_wait_coords, credit_store_indicator_color, mode='appear', timeout=5)
-        ark_window.wait_visible('credit_store_indicator', timeout=5)
+        # ark_window.wait_visible('credit_store_interface_indicator_bottom', timeout=5)
         
         return True
 
@@ -937,9 +950,8 @@ class Store:
         for idx in sorted_tiles:
             status = self.buy_tile(idx)
             if status == 'insufficient_credit':
-                logger.info("Insufficient credit, returning bought tiles")
-                logger.info(f"Bought tiles: {bought}")
-                return bought
+                logger.info("Insufficient credit detected during purchase; stopping further store buys")
+                return 'insufficient_credit'
             elif not status:
                 logger.info("Tile is not available")
             else:
@@ -958,4 +970,10 @@ if __name__ == "__main__":
     terminal = Terminal()
     store = Store()
 
-    task_aggregator.run_all_dailies()
+    # task_aggregator.run_all_dailies()
+    # store.open_credit_store()
+    # main_menu.navigate_to('tile_terminal', 'terminal_panel')
+    # terminal.open_orundum_switch()
+    # terminal.open_location(1)
+    # terminal._is_total_proxy_available()
+    terminal.run_simulation(use_total_proxy=True)

@@ -11,6 +11,7 @@ MISSIONS_PANEL = "missions_panel"
 FRIENDS_PANEL = "friends_panel"
 TERMINAL_PANEL = "terminal_panel"
 STORE_PANEL = "store_panel"
+CREDIT_STORE_PANEL = "credit_store_panel"
 
 def get_state_indicator_element_name(state_name: str) -> Optional[str]:
     if state_name == MAIN_MENU:
@@ -27,6 +28,8 @@ def get_state_indicator_element_name(state_name: str) -> Optional[str]:
         return "terminal_indicator"
     if state_name == STORE_PANEL:
         return "recommended_store_indicator"
+    if state_name == CREDIT_STORE_PANEL:
+        return "credit_store_interface_indicator_bottom"
     return None
 
 def is_state(window, state_name: str) -> bool:
@@ -50,6 +53,9 @@ def is_state(window, state_name: str) -> bool:
         return window.is_visible(el, log_checks=True) if el else False
     if state_name == STORE_PANEL:
         el = get_element("recommended_store_indicator")
+        return window.is_visible(el, log_checks=True) if el else False
+    if state_name == CREDIT_STORE_PANEL:
+        el = get_element("credit_store_interface_indicator_bottom")
         return window.is_visible(el, log_checks=True) if el else False
     return False
 
