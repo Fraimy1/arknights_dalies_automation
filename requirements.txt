@@ -7,3 +7,4 @@ pygetwindow
 mss
 numpy
 keyboard
+windows-curses; platform_system == "Windows"

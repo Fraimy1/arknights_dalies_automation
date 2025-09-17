@@ -1,5 +1,7 @@
-from dataclasses import dataclass
-from typing import Tuple
+import json
+import os
+from dataclasses import dataclass, asdict, replace
+from typing import Tuple, List, Optional
 
 
 # Global configuration for automation behavior. Adjust values as needed.
@@ -45,6 +47,58 @@ class Observability:
     annotation_thickness_px: int = 2
 
 
+# Logging configuration (levels as strings: DEBUG, INFO, WARNING, ERROR)
+@dataclass(frozen=True)
+class Logging:
+    enabled: bool = True
+    console_level: str = "INFO"
+    file_level: str = "DEBUG"
+
+
+# Gameplay/automation knobs for Arknights scenarios
+@dataclass(frozen=True)
+class ArknightsSettings:
+    # Recruitment
+    use_expedite: bool = False
+    finish_on_recruitment: bool = True
+
+    # Store
+    store_based_on: List[str] = ("discount", "rarity")  # priority order
+    store_rarity_priority: List[str] = (
+        "extremely_rare_orange",
+        "very_rare_pink",
+        "rare_blue",
+        "uncommon_yellow",
+        "common_gray",
+    )
+
+    # Terminal / Orundum
+    use_total_proxy: bool = True
+    orundum_location: int = 1
+    amount_orundum: int = 0
+    amount_sanity: int = 174
+    orundum_income: int = 330
+    orundum_cap: int = 1800
+    sanity_taken: int = 25
+
+
+@dataclass(frozen=True)
+class AnimationSettings:
+    # General scramble effect duration (seconds)
+    scramble_effect_duration: float = 1.2
+    # Typewriter per-character delay (seconds)
+    typewriter_speed: float = 0.035
+    # Delay between dots in dotted sequences (seconds)
+    dots_delay: float = 0.25
+    # General status/notice dwell time (seconds)
+    status_effect_duration: float = 1.2
+    # Boot sequence specific
+    welcome_speed: float = 0.02
+    username_speed: float = 0.06
+    per_char_scramble_duration: float = 0.25
+    settled_color_delay: float = 0.05
+
+
 # Keeping coordinates inside elements.py now; left here intentionally empty.
 ELEMENT_COORDS = {}
 
@@ -55,5 +109,51 @@ class Settings:
     clicks = Clicks()
     safety = Safety()
     observability = Observability()
+    logging = Logging()
+    arknights = ArknightsSettings()
+    animation = AnimationSettings()
+
+
+# --- Persistence helpers for user-tunable settings ---
+_DEFAULT_SETTINGS_PATH = os.path.join(os.path.dirname(__file__), 'user_settings.json')
+
+
+def save_user_settings(path: Optional[str] = None) -> bool:
+    try:
+        p = path or _DEFAULT_SETTINGS_PATH
+        data = {
+            'logging': asdict(Settings.logging),
+            'arknights': asdict(Settings.arknights),
+            'animation': asdict(Settings.animation),
+            'safety': asdict(Settings.safety),
+            'observability': asdict(Settings.observability),
+        }
+        with open(p, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception:
+        return False
+
+
+def load_user_settings(path: Optional[str] = None) -> bool:
+    try:
+        p = path or _DEFAULT_SETTINGS_PATH
+        if not os.path.exists(p):
+            return False
+        with open(p, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        if 'logging' in data:
+            Settings.logging = replace(Settings.logging, **data['logging'])
+        if 'arknights' in data:
+            Settings.arknights = replace(Settings.arknights, **data['arknights'])
+        if 'animation' in data:
+            Settings.animation = replace(Settings.animation, **data['animation'])
+        if 'safety' in data:
+            Settings.safety = replace(Settings.safety, **data['safety'])
+        if 'observability' in data:
+            Settings.observability = replace(Settings.observability, **data['observability'])
+        return True
+    except Exception:
+        return False
 
 
