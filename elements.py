@@ -317,8 +317,8 @@ ELEMENTS: Dict[str, UIElement] = {
     ),
     "recommended_store_indicator": UIElement(
         name="recommended_store_indicator",
-        pixel_points=[(127, 137, (255, 255, 255))],
-        click_coords=(127, 137),
+        pixel_points=[(150, 220, (255, 255, 255))],
+        click_coords=(150, 220),
     ),
     # 'insufficient_credit_indicator': UIElement(
     #     name="insufficient_credit_indicator",

@@ -202,20 +202,17 @@ class MainMenu:
 		Click a tile, confirm we arrived with target_state, retry after recovery if needed.
 		"""
 		for attempt in range(retries + 1):
-			
 			ark_window.safe_click(get_element(tile_name).click_coords, expect_visible=None)
-			
 			if wait_visible_after_click:
 				indicator_name = get_state_indicator_element_name(target_state)
 				if indicator_name:
 					ark_window.wait_visible(indicator_name, timeout=post_click_timeout)
-			
 			if ark_window.wait_state(target_state, timeout=Settings.timeouts.default_timeout):
+				logger.info(f"Arrived at {target_state}")
 				return True
-			
 			# Didn't arrive; recover and retry
 			self.return_to_main_menu()
-		
+		logger.error(f"Failed to reach {target_state} after {retries} retries")
 		return False
 		
 class Base:
@@ -294,6 +291,7 @@ class TaskAggregator:
 			use_expedite=ak.use_expedite if use_expedite is None else use_expedite,
 			finish_on_recruitment=ak.finish_on_recruitment if finish_on_recruitment is None else finish_on_recruitment,
 		)
+		self.store = Store()
 		self.base = Base()
 		self.main_menu = MainMenu()
 		self.missions = Missions()
@@ -974,10 +972,10 @@ if __name__ == "__main__":
 	main_menu = MainMenu()
 	base = Base()
 	daily_recruits = DailyRecruits(use_expedite=False)
-	task_aggregator = TaskAggregator(use_expedite=False, use_total_proxy=True)
+	task_aggregator = TaskAggregator()
 	missions = Missions()
 	friends = Friends()
 	terminal = Terminal()
 	store = Store()
 	
-	task_aggregator.run_all_dailies()
+	task_aggregator.run_store_tasks()

@@ -88,6 +88,7 @@ class AnimationSettings:
     scramble_effect_duration: float = 1.2
     # Typewriter per-character delay (seconds)
     typewriter_speed: float = 0.035
+    type_writer_fast: float = 0.06
     # Delay between dots in dotted sequences (seconds)
     dots_delay: float = 0.25
     # General status/notice dwell time (seconds)
@@ -95,9 +96,27 @@ class AnimationSettings:
     # Boot sequence specific
     welcome_speed: float = 0.02
     username_speed: float = 0.06
+    prts_speed: float = 0.06
     per_char_scramble_duration: float = 0.25
     settled_color_delay: float = 0.05
 
+
+@dataclass(frozen=True)
+class UIColors:
+    """Logical color scheme for the curses UI. Values are color names.
+
+    Allowed names: 'black','red','green','yellow','blue','magenta','cyan','white','default'
+    """
+    border: str = 'cyan'
+    title: str = 'yellow'
+    on: str = 'green'
+    off: str = 'red'
+    text: str = 'white'
+    selection_fg: str = 'white'
+    selection_bg: str = 'blue'
+    warning: str = 'white'  # window-not-found, etc.
+    error: str = 'red'
+    spinner: str = 'yellow'
 
 # Keeping coordinates inside elements.py now; left here intentionally empty.
 ELEMENT_COORDS = {}
@@ -112,6 +131,7 @@ class Settings:
     logging = Logging()
     arknights = ArknightsSettings()
     animation = AnimationSettings()
+    ui_colors = UIColors()
 
 
 # --- Persistence helpers for user-tunable settings ---

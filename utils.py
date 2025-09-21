@@ -52,19 +52,16 @@ def get_arknights_window_title(keywords_to_exclude=None):
     return None
 
 def get_window_info(window_title):
-    logger.debug(f"Entering get_window_info with title: {window_title}")
     """Get the position and size of a window by its title, preferring an exact match."""
     if not window_title:
         logger.warning("get_window_info called with an empty title.")
         return None
 
     windows = gw.getWindowsWithTitle(window_title)
-    logger.debug(f"Found potential windows: {[w.title for w in windows]} for title '{window_title}'")
 
     # Prefer an exact match to avoid ambiguity
     for window in windows:
         if window.title == window_title:
-            logger.debug(f"Found exact match: {window.title}")
             info = {
                 'left': window.left,
                 'right': window.right,
@@ -74,7 +71,6 @@ def get_window_info(window_title):
                 'height': window.height,
                 'title': window.title
             }
-            logger.debug(f"Window info: {info}")
             return info
     
     logger.warning(f"No exact match for '{window_title}' found. Aborting to prevent errors.")
@@ -94,8 +90,13 @@ class ArknightsWindow:
             title = get_arknights_window_title()
         self.title = title
         self.window = get_window_info(title)
-        self.width = self.window['width']
-        self.height = self.window['height']
+        # Provide safe defaults if window is not available
+        if self.window:
+            self.width = self.window['width']
+            self.height = self.window['height']
+        else:
+            self.width = 1920
+            self.height = 1080
         self.last_screenshot = None
         self._last_frame_time = 0.0
         self._frame_max_age_ms = 50.0  # simple frame cache
@@ -119,13 +120,13 @@ class ArknightsWindow:
 
     def refresh_window_info(self):
         """Refresh window information in case window moved/resized."""
-        logger.debug(f"Refreshing window info for title: {self.title}")
         old_size = (self.width, self.height)
         self.window = get_window_info(self.title)
         if self.window:
             self.width = self.window['width']
             self.height = self.window['height']
-            logger.debug(f"Window size changed from {old_size} to ({self.width},{self.height})")
+            if (self.width, self.height) != old_size:
+                logger.debug(f"Window size changed from {old_size} to ({self.width},{self.height})")
 
     def get_scaled_coords(self, base_x, base_y,
                           base_w=1920, base_h=1080):
@@ -147,6 +148,8 @@ class ArknightsWindow:
                           base_w=1920, base_h=1080):
         """Return _screen-relative_ coords, scaled to current size."""
         coords = self.get_scaled_coords(base_x, base_y, base_w, base_h)
+        if not self.window:
+            return (0, 0)
         scale_x = coords[0] + self.window['left'] 
         scale_y = coords[1] + self.window['top']
         absolute = (scale_x, scale_y)
@@ -156,6 +159,12 @@ class ArknightsWindow:
     def make_screenshot(self):
         """Grab the full virtual screen, then crop to the window (original behavior)."""
         self.refresh_window_info()
+        if not self.window:
+            # Return a blank frame to prevent crashes when window is not available
+            if self.last_screenshot is None:
+                self.last_screenshot = np.zeros((self.height, self.width, 3), dtype=np.uint8)
+                self._last_frame_time = time.time()
+            return self.last_screenshot
         with mss.mss() as sct:
             mon = sct.monitors[0]   # full virtual screen
             full = np.array(sct.grab(mon))[:, :, :3][:, :, ::-1]
@@ -254,6 +263,9 @@ class ArknightsWindow:
             base_x (int): The base x-coordinate (relative to 1920x1080).
             base_y (int): The base y-coordinate (relative to 1920x1080).
         """
+        if not self.window:
+            logger.info("Click ignored: Arknights window not found")
+            return
         absolute_coords = self.get_absolute_coords(base_x, base_y)
         logger.debug(f"Clicking at base coords ({base_x}, {base_y}) -> absolute {absolute_coords}")
         if self._dry_run:
@@ -335,6 +347,9 @@ class ArknightsWindow:
         if not el:
             logger.warning(f"tap: element '{element_name}' not found in registry")
             return False
+        if not self.window:
+            logger.info("Tap ignored: Arknights window not found")
+            return False
         # Prefer explicit click coords; if absent, fall back to first pixel anchor
         coords = el.click_coords or ((el.pixel_points[0][0], el.pixel_points[0][1]) if el.pixel_points else None)
         if not coords:
@@ -364,6 +379,9 @@ class ArknightsWindow:
             if not ok:
                 return False
         else:
+            if not self.window:
+                logger.info("safe_click ignored: Arknights window not found")
+                return False
             jx, jy = self._jitter_coords(click[0], click[1])
             abs_coords = self.get_absolute_coords(jx, jy)
             logger.debug(f"safe_click at {abs_coords} (base {jx},{jy})")
