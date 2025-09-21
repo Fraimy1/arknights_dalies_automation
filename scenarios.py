@@ -197,27 +197,26 @@ class MainMenu:
         # Final check
         return ark_window.wait_visible("main_menu_indicators", timeout=5.0)
 
-	def navigate_to(self, tile_name: str, target_state: str, retries: int = 21, wait_visible_after_click: bool = True, post_click_timeout: float = 0.1):
-		"""
-		Click a tile, confirm we arrived with target_state, retry after recovery if needed.
-		"""
-		for attempt in range(retries + 1):
-			
-			ark_window.safe_click(get_element(tile_name).click_coords, expect_visible=None)
-			
-			if wait_visible_after_click:
-				indicator_name = get_state_indicator_element_name(target_state)
-				if indicator_name:
-					ark_window.wait_visible(indicator_name, timeout=post_click_timeout)
-			
-			if ark_window.wait_state(target_state, timeout=Settings.timeouts.default_timeout):
-				return True
-			
-			# Didn't arrive; recover and retry
-			self.return_to_main_menu()
-		
-		return False
-		
+    def navigate_to(self, tile_name: str, target_state: str, retries: int = 21, wait_visible_after_click: bool = True, post_click_timeout: float = 0.1):
+        """
+        Click a tile, confirm we arrived with target_state, retry after recovery if needed.
+        """
+        for attempt in range(retries + 1):
+            
+            ark_window.safe_click(get_element(tile_name).click_coords, expect_visible=None)
+            
+            if wait_visible_after_click:
+                indicator_name = get_state_indicator_element_name(target_state)
+                if indicator_name:
+                    ark_window.wait_visible(indicator_name, timeout=post_click_timeout)
+            
+            if ark_window.wait_state(target_state, timeout=Settings.timeouts.default_timeout):
+                return True
+            
+            # Didn't arrive; recover and retry
+            self.return_to_main_menu()
+        
+        return False
 class Base:
     """
     This class automates the base process in Arknights.
